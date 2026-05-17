@@ -90,6 +90,11 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
     }
   }
 
+  if (!supabase) {
+    console.warn("Supabase not initialized, but no hardcoded fallback for this resource.");
+    return null;
+  }
+
   const { data, error } = await supabase
     .from('resources')
     .select('content')
@@ -234,6 +239,10 @@ export default function App() {
   // --- Supabase Connection Test ---
   useEffect(() => {
     async function testConnection() {
+      if (!supabase) {
+        console.warn("Supabase client not initialized. Skipping connection test.");
+        return;
+      }
       try {
         const { error } = await supabase.from('resources').select('count', { count: 'exact', head: true });
         if (error) throw error;
