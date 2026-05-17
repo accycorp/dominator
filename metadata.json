@@ -1,0 +1,6 @@
+{
+  "name": "Dominator",
+  "description": "Your ultimate academic companion. Master courses, organize resources, and dominate exams with comprehensive study tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
