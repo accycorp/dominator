@@ -63,6 +63,12 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
       if (noteName === 'Dominator note (Note 2)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GA_Unit3_IPE_Notes_Dominator.pdf';
       if (noteName === 'Dominator note (Note 3)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GA_Unit4_Globalization_Regionalism_Notes.pdf';
     }
+    if (course === 'Computer Programming') {
+      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_CS_Notes_Ch3_Ch4%20(1).pdf';
+    }
+    if (course === 'Communicative English II') {
+      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Communicative_English_II_MasterNotes.pdf';
+    }
   }
 
   // Hardcoded practice questions fallback
