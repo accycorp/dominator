@@ -68,7 +68,7 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
   // Hardcoded practice questions fallback
   if (resource === 'Practice question') {
     if (course === 'Anthropology') {
-      if (noteName === 'Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ANTH1012_Unit4_Question_Bank.pdf';
+      if (noteName === 'Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ANTH1012_Units4and5_Question_Bank.pdf';
       if (noteName === 'Exam 2') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ANTH1012_Units4and5_Question_Bank.pdf';
       if (noteName === 'Exam 3') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ANTH1012_Unit6_Question_Bank1.pdf';
     }
@@ -149,6 +149,26 @@ const COURSES: Course[] = [
   'Global Affairs', 'Emerging Technology', 'Computer Programming', 
   'Communicative English II', 'Applied Mathematics', 'History'
 ];
+
+const DEPARTMENT_COURSES: Record<Department, Course[]> = {
+  'Pre-engineering': [
+    'Anthropology', 'Global Affairs', 'Emerging Technology', 
+    'Computer Programming', 'Communicative English II', 
+    'Applied Mathematics', 'History'
+  ],
+  'Pre-medicine': [
+    'Anthropology', 'General Chemistry', 'Biology', 
+    'Economics', 'Emerging Technology', 'Communicative English II', 'History'
+  ],
+  'Other natural science': [
+    'Anthropology', 'General Chemistry', 'Biology', 
+    'Economics', 'Emerging Technology', 'Communicative English II', 'History'
+  ],
+  'Pharmacy': [
+    'Anthropology', 'General Chemistry', 'Biology', 
+    'Economics', 'Emerging Technology', 'Communicative English II', 'History'
+  ],
+};
 
 // --- Components ---
 
@@ -607,7 +627,7 @@ export default function App() {
               ) : (
                 /* Course Selection Grid */
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-                  {COURSES.map((course) => (
+                  {(selectedDept ? DEPARTMENT_COURSES[selectedDept] : COURSES).map((course) => (
                     <button
                       key={course}
                       onClick={() => handleCourseSelect(course)}
