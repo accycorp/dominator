@@ -6,6 +6,7 @@
 import { useState, useMemo, useEffect, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from './lib/supabase';
+import { RobustFileViewer } from './components/RobustFileViewer';
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -233,7 +234,7 @@ export default function App() {
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
   const [selectedSubNote, setSelectedSubNote] = useState<string | null>(null);
   const [selectedExam, setSelectedExam] = useState<string | null>(null);
-  const [viewerContent, setViewerContent] = useState<{ content: string; type: 'text' | 'pdf' } | null>(null);
+  const [viewerContent, setViewerContent] = useState<{ content: string; originalUrl?: string; type: 'text' | 'pdf' } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // --- Supabase Connection Test ---
@@ -269,6 +270,7 @@ export default function App() {
   const processResourceContent = async (fileData: string) => {
     let type: 'pdf' | 'text' = 'text';
     let content = fileData;
+    let originalUrl = fileData.startsWith('http') ? fileData : undefined;
 
     if (fileData.startsWith('JVBERi0') || fileData.toLowerCase().includes('.pdf') || fileData.startsWith('http')) {
       type = 'pdf';
@@ -295,7 +297,7 @@ export default function App() {
         }
       }
     }
-    return { content, type };
+    return { content, type, originalUrl };
   };
 
   const handleStart = () => setCurrentView(View.DEPARTMENT);
@@ -328,8 +330,8 @@ export default function App() {
       const fileData = await fetchSupabaseResource(selectedDept!, course, selectedResource!);
       setIsLoading(false);
       if (fileData && typeof fileData === 'string') {
-        const { content, type } = await processResourceContent(fileData);
-        setViewerContent({ content, type });
+        const { content, type, originalUrl } = await processResourceContent(fileData);
+        setViewerContent({ content, type, originalUrl });
         setCurrentView(View.VIEWER);
       } else {
         alert("Resource content not found.");
@@ -353,9 +355,9 @@ export default function App() {
       const fileData = await fetchSupabaseResource(selectedDept!, selectedCourse!, selectedResource!, note);
       
       if (fileData && typeof fileData === 'string') {
-        const { content, type } = await processResourceContent(fileData);
+        const { content, type, originalUrl } = await processResourceContent(fileData);
         setIsLoading(false);
-        setViewerContent({ content, type });
+        setViewerContent({ content, type, originalUrl });
         setCurrentView(View.VIEWER);
       } else {
         setIsLoading(false);
@@ -375,9 +377,9 @@ export default function App() {
       const fileData = await fetchSupabaseResource(selectedDept!, selectedCourse!, selectedResource!, combinedNoteName);
       
       if (fileData && typeof fileData === 'string') {
-        const { content, type } = await processResourceContent(fileData);
+        const { content, type, originalUrl } = await processResourceContent(fileData);
         setIsLoading(false);
-        setViewerContent({ content, type });
+        setViewerContent({ content, type, originalUrl });
         setCurrentView(View.VIEWER);
       } else {
         setIsLoading(false);
@@ -396,9 +398,9 @@ export default function App() {
       const fileData = await fetchSupabaseResource(selectedDept!, selectedCourse!, selectedResource!, exam);
       
       if (fileData && typeof fileData === 'string') {
-        const { content, type } = await processResourceContent(fileData);
+        const { content, type, originalUrl } = await processResourceContent(fileData);
         setIsLoading(false);
-        setViewerContent({ content, type });
+        setViewerContent({ content, type, originalUrl });
         setCurrentView(View.VIEWER);
       } else {
         setIsLoading(false);
@@ -786,16 +788,18 @@ export default function App() {
 
                 <div className="flex-1 bg-black/40 relative group">
                   {viewerContent.type === 'pdf' ? (
-                    <>
+                    viewerContent.originalUrl ? (
+                      <RobustFileViewer 
+                        supabaseUrl={viewerContent.originalUrl} 
+                        fileName={`${selectedCourse} - ${selectedResource}`} 
+                      />
+                    ) : (
                       <iframe
-                        src={viewerContent.content.startsWith('http') && !viewerContent.content.startsWith('blob:')
-                          ? `https://docs.google.com/viewer?url=${encodeURIComponent(viewerContent.content)}&embedded=true` 
-                          : `${viewerContent.content}#view=FitH&toolbar=0`}
+                        src={`${viewerContent.content}#view=FitH&toolbar=0`}
                         className="w-full h-full border-none bg-charcoal-900"
                         title="Resource Viewer"
                       />
-
-                    </>
+                    )
                   ) : (
                     <div className="h-full overflow-auto p-8 md:p-16 bg-charcoal-900 text-slate-300 font-sans leading-relaxed text-lg max-w-4xl mx-auto">
                       <div className="whitespace-pre-wrap selection:bg-gold-500/30 selection:text-white">
