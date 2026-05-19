@@ -51,8 +51,9 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
 
   // Hardcoded short notes fallback
   if (resource === 'Short note') {
-    if (course === 'Applied Mathematics' && noteName === 'Note 1') {
-      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Applied%20Note(3-4)%20@Dominator7_Bot.pdf';
+    if (course === 'Applied Mathematics') {
+      if (noteName === 'Note 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Applied%20Note(3-4)%20@Dominator7_Bot.pdf';
+      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/MTDominator_Units3_4_Notes.pdf';
     }
     if (course === 'Anthropology') {
       if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/AT_Unit4_Marginalized_Groups_Notes%20(1).pdf';
@@ -68,6 +69,21 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
     }
     if (course === 'Communicative English II') {
       if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Communicative_English_II_MasterNotes.pdf';
+    }
+    if (course === 'Biology') {
+      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/General_Biology_Units4_5_Notes%20(2).pdf';
+    }
+    if (course === 'History') {
+      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/HIST102_Units5_6_StudyNotes.pdf';
+    }
+    if (course === 'Emerging Technology') {
+      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/ETUnit4_IoT_Notes.pdf';
+    }
+    if (course === 'Economics') {
+      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Economics_Units_4_5_Notes%20(1).pdf';
+    }
+    if (course === 'General Chemistry' && dept === 'Other natural science') {
+      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GCDominator_Full_Explanatory_Chemistry_Notes_Units4_5.pdf';
     }
   }
 
@@ -94,6 +110,15 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
     }
     if (course === 'Communicative English II' && noteName === 'Exam 1') {
       return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Dominator%20english_Ch3-5%20.pdf';
+    }
+    if (course === 'History') {
+      if (noteName === 'Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Dominator_History_Quiz_Ch5_6.pdf';
+    }
+    if (course === 'Biology') {
+      if (noteName === 'Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Biology_Units4_5_Exam.pdf';
+    }
+    if (course === 'Economics') {
+      if (noteName === 'Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ECDominator_Units4_5_Exam%20(1).pdf';
     }
   }
 
