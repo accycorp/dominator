@@ -49,6 +49,22 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
     return courseUrls[course];
   }
 
+  // Hardcoded Amharic+English notes fallback
+  if (resource === 'Amharic+English note') {
+    if (course === 'History') {
+      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/DOMINATOR_Premium_Bilingual_Notes.pdf';
+    }
+    if (course === 'Anthropology') {
+      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Anthropology_Course_Notes%20(1).pdf';
+    }
+    if (course === 'Emerging Technology') {
+      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/dominator_master_handbook.pdf';
+    }
+    if (course === 'Global Affairs') {
+      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Global_Trends.pdf';
+    }
+  }
+
   // Hardcoded short notes fallback
   if (resource === 'Short note') {
     if (course === 'Applied Mathematics') {
@@ -65,7 +81,9 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
       if (noteName === 'Dominator note (Note 3)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GA_Unit4_Globalization_Regionalism_Notes.pdf';
     }
     if (course === 'Computer Programming') {
-      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_CS_Notes_Ch3_Ch4%20(1).pdf';
+      if (noteName === 'Note 1' || noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPControlStructures_Chapter3_Dominator.pdf';
+      if (noteName === 'Note 2' || noteName === 'Dominator note (Note 2)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPChapter4_Functions_Notes%20(1).pdf';
+      if (noteName === 'Note 3' || noteName === 'Dominator note (Note 3)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPArrays_Chapter5_Dominator%20(1).pdf';
     }
     if (course === 'Communicative English II') {
       if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Communicative_English_II_MasterNotes.pdf';
@@ -78,12 +96,18 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
     }
     if (course === 'Emerging Technology') {
       if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/ETUnit4_IoT_Notes.pdf';
+      if (noteName === 'Dominator note (Note 2)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_Premium_Unit5_6_Notes%20(1).pdf';
     }
     if (course === 'Economics') {
       if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Economics_Units_4_5_Notes%20(1).pdf';
     }
-    if (course === 'General Chemistry' && dept === 'Other natural science') {
-      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GCDominator_Full_Explanatory_Chemistry_Notes_Units4_5.pdf';
+    if (course === 'General Chemistry') {
+      if (dept === 'Other natural science') {
+        if (noteName === 'Note 1' || noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GCDominator_Full_Explanatory_Chemistry_Notes_Units4_5.pdf';
+      }
+      if (dept === 'Pre-medicine') {
+        if (noteName === 'Note 1' || noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/OCDominator_Organic_Chem_Ch4_5_Notes-1.pdf';
+      }
     }
   }
 
@@ -119,6 +143,21 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
     }
     if (course === 'Economics') {
       if (noteName === 'Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ECDominator_Units4_5_Exam%20(1).pdf';
+    }
+  }
+
+  // Hardcoded previous exams fallback
+  if (resource === 'Previous exams') {
+    if (course === 'Applied Mathematics') {
+      if (noteName === 'Final Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_AppliedMath1_Final_Exam_Solutions.pdf';
+      if (noteName === 'Final Exam 2') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_CP_Final_Exam_Solutions_2024.pdf';
+    }
+    if (course === 'Emerging Technology') {
+      if (noteName === 'Final Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Dominator_Emerging_Tech_Exam_Answers.pdf';
+    }
+    if (course === 'Anthropology') {
+      if (noteName === 'Final Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_SocialAnthropology_Anth1012_FinalExam_2015EC_Answered.pdf';
+      if (noteName === 'Final Exam 2') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Dominator_Anthropology_Exam_2016.pdf';
     }
   }
 
@@ -371,7 +410,7 @@ export default function App() {
       return;
     }
 
-    if (selectedResource === 'Practice question') {
+    if (selectedResource === 'Practice question' || selectedResource === 'Previous exams') {
       setCurrentView(View.EXAM_SELECTION);
       return;
     }
@@ -751,12 +790,15 @@ export default function App() {
           {currentView === View.EXAM_SELECTION && (
             <ViewContainer 
               key="exam-selection"
-              title="Select Practice Exam"
-              subtitle={`Test your knowledge in ${selectedCourse}`}
+              title={selectedResource === 'Previous exams' ? "Select Previous Exam" : "Select Practice Exam"}
+              subtitle={selectedResource === 'Previous exams' ? `Previous exams for ${selectedCourse}` : `Test your knowledge in ${selectedCourse}`}
               onBack={() => setCurrentView(View.COURSE)}
             >
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
-                {['Exam 1', 'Exam 2', 'Exam 3'].map((exam) => (
+                {(selectedResource === 'Previous exams'
+                  ? ['Final Exam 1', 'Final Exam 2', 'Final Exam 3']
+                  : ['Exam 1', 'Exam 2', 'Exam 3']
+                ).map((exam) => (
                   <button
                     key={exam}
                     onClick={() => handleExamSelect(exam)}
