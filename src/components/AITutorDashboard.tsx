@@ -133,7 +133,7 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
               if (p.type === 'link') {
                 return (
                   <a
-                    key={`link-${idx}`}
+                    key={idx}
                     href={p.url}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -144,7 +144,7 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
                   </a>
                 );
               }
-              return <span key={`text-span-${idx}`}>{renderBoldText(p.text)}</span>;
+              return renderBoldText(p.text);
             })
           )}
         </p>
@@ -160,26 +160,14 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
 
     while ((match = boldRegex.exec(text)) !== null) {
       if (match.index > lastIndex) {
-        parts.push(
-          <span key={`text-${lastIndex}`}>
-            {text.substring(lastIndex, match.index)}
-          </span>
-        );
+        parts.push(text.substring(lastIndex, match.index));
       }
-      parts.push(
-        <strong key={`bold-${match.index}`} className="text-white font-bold">
-          {match[1]}
-        </strong>
-      );
+      parts.push(<strong key={match.index} className="text-white font-bold">{match[1]}</strong>);
       lastIndex = boldRegex.lastIndex;
     }
 
     if (lastIndex < text.length) {
-      parts.push(
-        <span key={`text-end-${lastIndex}`}>
-          {text.substring(lastIndex)}
-        </span>
-      );
+      parts.push(text.substring(lastIndex));
     }
 
     return parts.length === 0 ? text : <>{parts}</>;
