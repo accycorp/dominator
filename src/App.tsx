@@ -7,6 +7,7 @@ import { useState, useMemo, useEffect, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from './lib/supabase';
 import { RobustFileViewer } from './components/RobustFileViewer';
+import { StudyPlanDashboard } from './components/StudyPlanDashboard';
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -38,6 +39,7 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
     'Communicative English II': 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Communicative%20English%20Language%20Skills%20II.pdf',
     'Computer Programming': 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Computer%20Programming.pdf',
     'General Chemistry': 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/General%20Chemistry.pdf',
+    'Organic Chemistry': 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/General%20Chemistry.pdf',
     'Biology': 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Genral%20Biology.pdf',
     'Global Affairs': 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Global%20Affiars.pdf',
     'History': 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/History.pdf',
@@ -101,7 +103,7 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
     if (course === 'Economics') {
       if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Economics_Units_4_5_Notes%20(1).pdf';
     }
-    if (course === 'General Chemistry') {
+    if (course === 'General Chemistry' || course === 'Organic Chemistry') {
       if (dept === 'Other natural science') {
         if (noteName === 'Note 1' || noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GCDominator_Full_Explanatory_Chemistry_Notes_Units4_5.pdf';
       }
@@ -152,12 +154,34 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
       if (noteName === 'Final Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_AppliedMath1_Final_Exam_Solutions.pdf';
       if (noteName === 'Final Exam 2') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_CP_Final_Exam_Solutions_2024.pdf';
     }
-    if (course === 'Emerging Technology') {
-      if (noteName === 'Final Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Dominator_Emerging_Tech_Exam_Answers.pdf';
+    if (course === 'Emerging Technology' || course === 'emerging technology') {
+      if (noteName === 'Final Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Emerging_Technologies_Comprehensive_Master_Blueprint_Solutions.pdf';
+      if (noteName === 'Final Exam 2') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Emerging_Technologies_Exam_Solutions.pdf';
+      if (noteName === 'Final Exam 3') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Emerging_Technology_Exam_Review.pdf';
     }
     if (course === 'Anthropology') {
       if (noteName === 'Final Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_SocialAnthropology_Anth1012_FinalExam_2015EC_Answered.pdf';
-      if (noteName === 'Final Exam 2') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Dominator_Anthropology_Exam_2016.pdf';
+      if (noteName === 'Final Exam 2') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Bahirdar_University_Anthropology_Final_Exam_Comprehensive_Solutions.pdf';
+      if (noteName === 'Final Exam 3') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Bahir_Dar_University_Anthropology_Final_Exam_2016_Solutions.pdf';
+    }
+    if (course === 'Global Affairs') {
+      if (noteName === 'Final Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_GlobalTrends_2017_Final_Exam_Complete_Answers.pdf';
+      if (noteName === 'Final Exam 2') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_GlobalTrends_Final_Exam_Complete_Answers.pdf';
+    }
+    if (course === 'History') {
+      if (noteName === 'Final Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_History_2016_Exam_Answers.pdf';
+      if (noteName === 'Final Exam 2') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_History_Exam_Answers-1.pdf';
+      if (noteName === 'Final Exam 3') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_History_Exam_Answers.pdf';
+    }
+    if (course === 'Computer Programming' || course === 'computer programming') {
+      if (noteName === 'Final Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/CPP_Exam_FullSolutions_v2.pdf';
+    }
+    if (course === 'Communicative English II' || course === 'english') {
+      if (noteName === 'Final Exam 2') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/ENFLEn1011_Exam_Answers.pdf';
+      if (noteName === 'Final Exam 3') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/ENFLEn1011_Full_Answers.pdf';
+    }
+    if ((course === 'General Chemistry' || course === 'chemistry' || course === 'Organic Chemistry' || course === 'organic chemistry') && dept === 'Other natural science') {
+      if (noteName === 'Final Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Dominator_GeneralChemistry_Solutions.pdf';
     }
   }
 
@@ -215,9 +239,10 @@ const RESOURCES: { id: ResourceType; icon: any }[] = [
 ];
 
 const COURSES: Course[] = [
-  'Anthropology', 'General Chemistry', 'Biology', 'Economics', 
+  'Anthropology', 'General Chemistry', 'Organic Chemistry', 'Biology', 'Economics', 
   'Global Affairs', 'Emerging Technology', 'Computer Programming', 
-  'Communicative English II', 'Applied Mathematics', 'History'
+  'Communicative English II', 'Applied Mathematics', 'History',
+  'Inclusiveness', 'Entrepreneurship'
 ];
 
 const DEPARTMENT_COURSES: Record<Department, Course[]> = {
@@ -227,8 +252,9 @@ const DEPARTMENT_COURSES: Record<Department, Course[]> = {
     'Applied Mathematics', 'History'
   ],
   'Pre-medicine': [
-    'Anthropology', 'General Chemistry', 'Biology', 
-    'Economics', 'Emerging Technology', 'Communicative English II', 'History'
+    'Anthropology', 'Organic Chemistry', 
+    'Economics', 'Emerging Technology', 'Communicative English II', 'History',
+    'Inclusiveness', 'Entrepreneurship', 'Global Affairs'
   ],
   'Other natural science': [
     'Anthropology', 'General Chemistry', 'Biology', 
@@ -679,21 +705,10 @@ export default function App() {
             >
               {selectedResource === 'Study plan' ? (
                 /* Study Plan Dashboard */
-                <div className="mt-8 space-y-8">
-                  <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                      <div key={day} className="glass-card p-4 min-h-[160px] flex flex-col">
-                        <span className="text-gold-500 font-display font-bold text-xs uppercase tracking-widest mb-4 block">
-                          {day}
-                        </span>
-                        <div className="flex-1 flex flex-col justify-center items-center gap-2 text-slate-600 italic text-xs">
-                          <div className="w-full h-2 bg-white/5 rounded-full" />
-                          <div className="w-2/3 h-2 bg-white/5 rounded-full" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <StudyPlanDashboard 
+                  selectedDept={selectedDept} 
+                  courses={selectedDept ? DEPARTMENT_COURSES[selectedDept] : COURSES} 
+                />
               ) : (
                 /* Course Selection Grid */
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
@@ -847,13 +862,15 @@ export default function App() {
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <button 
-                    onClick={handleDownload}
-                    className="btn-secondary py-2.5 px-6 flex items-center gap-2 text-sm"
-                  >
-                    <ArrowRight className="w-4 h-4 rotate-90" />
-                    Save Offline
-                  </button>
+                  {!(selectedResource === 'Short note' && selectedNote === 'Dominator note') && (
+                    <button 
+                      onClick={handleDownload}
+                      className="btn-secondary py-2.5 px-6 flex items-center gap-2 text-sm"
+                    >
+                      <ArrowRight className="w-4 h-4 rotate-90" />
+                      Save Offline
+                    </button>
+                  )}
                   <button 
                     onClick={() => setCurrentView(View.COURSE)}
                     className="btn-primary py-2.5 px-6 text-sm"
@@ -885,6 +902,10 @@ export default function App() {
                       <RobustFileViewer 
                         supabaseUrl={viewerContent.originalUrl} 
                         fileName={`${selectedCourse} - ${selectedResource}`} 
+                        hideFullscreen={
+                          (selectedResource === 'Short note' && selectedNote === 'Dominator note') ||
+                          (selectedResource === 'Practice question')
+                        }
                       />
                     ) : (
                       <iframe

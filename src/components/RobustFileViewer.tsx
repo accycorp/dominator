@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 interface RobustFileViewerProps {
   supabaseUrl: string;
   fileName?: string;
+  hideFullscreen?: boolean;
 }
 
 declare global {
@@ -15,7 +16,7 @@ declare global {
   }
 }
 
-export const RobustFileViewer: React.FC<RobustFileViewerProps> = ({ supabaseUrl, fileName = "Document" }) => {
+export const RobustFileViewer: React.FC<RobustFileViewerProps> = ({ supabaseUrl, fileName = "Document", hideFullscreen = false }) => {
   const [viewerUrl, setViewerUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
@@ -61,13 +62,15 @@ export const RobustFileViewer: React.FC<RobustFileViewerProps> = ({ supabaseUrl,
           >
             🔄 Reload Frame
           </button>
-          <button 
-            type="button"
-            onClick={handleFallbackOpen}
-            className="px-2 py-1 bg-gold-600 text-white rounded font-semibold hover:bg-gold-700 transition"
-          >
-            ↗️ Open Fullscreen
-          </button>
+          {!hideFullscreen && (
+            <button 
+              type="button"
+              onClick={handleFallbackOpen}
+              className="px-2 py-1 bg-gold-600 text-white rounded font-semibold hover:bg-gold-700 transition"
+            >
+              ↗️ Open Fullscreen
+            </button>
+          )}
         </div>
       </div>
 
