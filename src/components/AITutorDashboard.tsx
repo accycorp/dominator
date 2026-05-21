@@ -138,16 +138,24 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Greetings! I am your **Dominator AI Academic Tutor**. 🎓\n\nI have complete local knowledge of your university catalog, freshmen study modules, Amharic + English bilingual notes, and past examination keys.\n\n${
+      content: `Greetings! I am your **Dominator AI Tutor**. 🎓\n\n${
         selectedDept 
-          ? `I see you are in the **${selectedDept}** department. You have courses like *${courses.slice(0, 4).join(', ')}* and more.` 
-          : "Please select a department to help me tailor your academic success!"
-      }\n\nAsk me anything! For example, you can ask me to recommend specific units, explain tricky concepts, or give you direct download links for our notes!`
+          ? `Tailored copy for **${selectedDept}** (courses like *${courses.slice(0, 3).join(', ')}*).` 
+          : "Please select a department above for custom suggestions."
+      } Ask me anything to get textbook download links, Amharic notes, exam blueprints, and weekly study plans instantly!`
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [currentPromptIdx, setCurrentPromptIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentPromptIdx((prev) => (prev + 1) % QUICK_PROMPTS.length);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, []);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -429,30 +437,53 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
 
       {/* Suggested Promotions */}
       {messages.length === 1 && (
-        <div className="px-6 pb-2">
-          <p className="text-xs text-slate-400 font-medium mb-2 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-            Suggested Questions with Local Files:
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {QUICK_PROMPTS.map((qp, idx) => (
-              <button
-                key={idx}
-                type="button"
-                id={`quick-prompt-${idx}`}
-                onClick={() => handleSend(qp.prompt)}
-                className="glass-card hover:bg-white/10 border border-white/5 p-3 text-left transition-all rounded-xl flex items-start gap-2.5 group"
-              >
-                <div className="p-1.5 rounded-lg bg-white/5 text-gold-400 group-hover:text-gold-200 transition-colors">
-                  <qp.icon className="w-3.5 h-3.5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h5 className="text-xs font-semibold text-white truncate">{qp.label}</h5>
-                  <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">{qp.prompt}</p>
-                </div>
-              </button>
-            ))}
+        <div className="px-6 pb-3">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-gold-500/80" />
+              Suggested Guide (Tap to ask):
+            </p>
+            <button
+              onClick={() => setCurrentPromptIdx((prev) => (prev + 1) % QUICK_PROMPTS.length)}
+              type="button"
+              id="next-suggested-btn"
+              className="text-[10px] text-slate-500 hover:text-gold-400 font-medium flex items-center gap-0.5 px-2 py-0.5 rounded bg-white/5 border border-white/5 active:scale-95 transition-all"
+            >
+              Try another
+            </button>
           </div>
+          <AnimatePresence mode="wait">
+            <motion.button
+              key={currentPromptIdx}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 0.85, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              whileHover={{ opacity: 1, scale: 1.01 }}
+              transition={{ duration: 0.3 }}
+              type="button"
+              id={`quick-prompt-${currentPromptIdx}`}
+              onClick={() => handleSend(QUICK_PROMPTS[currentPromptIdx].prompt)}
+              className="w-full bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 p-2 px-3 text-left transition-all rounded-lg flex items-center justify-between gap-3 group text-xs text-slate-300 active:scale-[0.99]"
+            >
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className="p-1 rounded-md bg-white/5 text-gold-400 group-hover:text-gold-300 transition-colors shrink-0">
+                  {(() => {
+                    const IconComp = QUICK_PROMPTS[currentPromptIdx].icon;
+                    return <IconComp className="w-3.5 h-3.5" />;
+                  })()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="font-semibold text-slate-200 block text-[11px] leading-tight group-hover:text-white transition-colors">
+                    {QUICK_PROMPTS[currentPromptIdx].label}
+                  </span>
+                  <span className="text-[10px] text-slate-500 block truncate mt-0.5 group-hover:text-slate-400 transition-colors">
+                    {QUICK_PROMPTS[currentPromptIdx].prompt}
+                  </span>
+                </div>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-gold-400 transition-colors shrink-0 ml-1" />
+            </motion.button>
+          </AnimatePresence>
         </div>
       )}
 
