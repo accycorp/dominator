@@ -11,8 +11,7 @@ let aiClient: GoogleGenAI | null = null;
 
 function getAiClient(): GoogleGenAI {
   if (!aiClient) {
-    const rawKey = process.env.GEMINI_API_KEY;
-    const apiKey = (rawKey && rawKey.trim() !== "") ? rawKey : "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY environment variable is not configured. Please add your key in Settings > Secrets.");
     }
@@ -118,9 +117,9 @@ Previous Exams:
 YOUR MISSION & CONSTRAINTS:
 1. Speak in an encouraging, academic, structured, and warm voice. Feel free to use phrases typical of supportive tutors.
 2. Under no circumstance make up references that do not exist in the above list. Only mention the notes, questions, exams, or modules that are explicitly specified above, and always use their exact URLs so the user can easily download or open them in a click. Use markdown link syntax: [Name of Resource](URL).
-3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources and outline a plan.
-4. Keep answers clean, readable, in formatted Markdown (with headings, bold text, bullet points), and deep.
-5. If the user asks general academic freshman questions (e.g., how to study for Mathematics or Organic chemistry, how to handle essay writing, explain key topics in iot or emerging technologies), give excellent explanations with reference to our specialized material!
+3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources and outline a plan with minimal steps.
+4. Keep answers extremely short, concise, and brief. Limit the response length to 1-2 small paragraphs or 3-4 simple bullet points maximum. It must be highly compact and optimized for reading on small mobile/phone screens.
+5. If the user asks general academic freshman questions, provide punchy, high-impact answers and reference our specialized materials immediately. No long essays or detailed summaries.
 6. Always output standard markdown. Do not include any HTML tags. Since you are an expert freshman academic tutor in Ethiopia, you are highly specialized in helping them succeed.
 7. **CRITICAL MANDATE: ONLY RESPOND IN NATURAL HUMAN LANGUAGE.** Absolutely do NOT output any robotic elements, programming dictionaries/JSON maps, raw system status codes, database listings, or non-human data tags. The response must sound 100% human-crafted, warm, and natural. Do not outline technical JSON responses, debug metadata, or systemic codes unless the user is specifically debugging a specific code structure in a programming class. Always speak entirely as a supportive, real-life human mentor using standard human speech, friendly paragraphs, and clear bullet points.
 `;
@@ -144,12 +143,9 @@ async function startServer() {
       const genAI = getAiClient();
 
       // We form content history to send to Gemini
-      // Ensure the message history always starts with a user turn as required by Gemini
-      const firstUserIndex = messages.findIndex(msg => msg.role === 'user');
-      const activeMessages = firstUserIndex !== -1 ? messages.slice(firstUserIndex) : messages;
-
+      // messages is of form [{ role: 'user' | 'model', content: string }]
       // Map it to GenAI SDK contents format
-      const genAiContents = activeMessages.map(msg => ({
+      const genAiContents = messages.map(msg => ({
         role: msg.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: msg.content }]
       }));
@@ -163,9 +159,9 @@ async function startServer() {
         personalizedInstruction += `\n\nCURRENT STUDENT PROFILE:\n- Selected Department: ${userContext.department || 'Not selected yet'}\n- Enrolled Freshman Courses: ${courseList}\n`;
       }
 
-      // Generate response using gemini-2.5-flash
+      // Generate response using gemini-3.5-flash
       const response = await genAI.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.5-flash",
         contents: genAiContents,
         config: {
           systemInstruction: personalizedInstruction,

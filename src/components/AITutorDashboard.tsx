@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Send, Sparkles, User, Bot, AlertCircle, RefreshCw, BookOpen, ArrowRight, HelpCircle } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -35,7 +36,7 @@ const QUICK_PROMPTS = [
   }
 ];
 
-const LOCAL_KNOWLEDGE_INSTRUCTION = `
+const CLIENT_LOCAL_KNOWLEDGE_INSTRUCTION = `
 You are the "Dominator AI Academic Tutor", the official premium companion assistant for Ethiopian freshman university students.
 Your goal is to guide students across different departments and courses, recommending notes, study methods, modules, and helping them master their subjects.
 
@@ -111,7 +112,7 @@ Previous Exams:
 - Applied Mathematics Final 1: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_AppliedMath1_Final_Exam_Solutions.pdf
 - Applied Mathematics Final 2: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_CP_Final_Exam_Solutions_2024.pdf
 - Emerging Technology Full Blueprint: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Emerging_Technologies_Comprehensive_Master_Blueprint_Solutions.pdf
-- Anthropology Final Exam 1 (2015 EC): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_SocialAnthropology_Anth1012_FinalExam_2015EC_Answered.pdf
+- Anthropology Final Exam 1 (2015 EC): https://xlsqnjbklwklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_SocialAnthropology_Anth1012_FinalExam_2015EC_Answered.pdf
 - Anthropology Final Exam 2 (Bahir Dar University): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Bahirdar_University_Anthropology_Final_Exam_Comprehensive_Solutions.pdf
 - Anthropology Final Exam 3 (2016): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Bahir_Dar_University_Anthropology_Final_Exam_2016_Solutions.pdf
 - Global Affairs Final 1: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_GlobalTrends_2017_Final_Exam_Complete_Answers.pdf
@@ -125,37 +126,31 @@ Previous Exams:
 YOUR MISSION & CONSTRAINTS:
 1. Speak in an encouraging, academic, structured, and warm voice. Feel free to use phrases typical of supportive tutors.
 2. Under no circumstance make up references that do not exist in the above list. Only mention the notes, questions, exams, or modules that are explicitly specified above, and always use their exact URLs so the user can easily download or open them in a click. Use markdown link syntax: [Name of Resource](URL).
-3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources and outline a plan.
-4. Keep answers clean, readable, in formatted Markdown (with headings, bold text, bullet points), and deep.
-5. If the user asks general academic freshman questions (e.g., how to study for Mathematics or Organic chemistry, how to handle essay writing, explain key topics in iot or emerging technologies), give excellent explanations with reference to our specialized material!
+3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources and outline a plan with minimal steps.
+4. Keep answers extremely short, concise, and brief. Limit the response length to 1-2 small paragraphs or 3-4 simple bullet points maximum. It must be highly compact and optimized for reading on small mobile/phone screens.
+5. If the user asks general academic freshman questions, provide punchy, high-impact answers and reference our specialized materials immediately. No long essays or detailed summaries.
 6. Always output standard markdown. Do not include any HTML tags. Since you are an expert freshman academic tutor in Ethiopia, you are highly specialized in helping them succeed.
 7. **CRITICAL MANDATE: ONLY RESPOND IN NATURAL HUMAN LANGUAGE.** Absolutely do NOT output any robotic elements, programming dictionaries/JSON maps, raw system status codes, database listings, or non-human data tags. The response must sound 100% human-crafted, warm, and natural. Do not outline technical JSON responses, debug metadata, or systemic codes unless the user is specifically debugging a specific code structure in a programming class. Always speak entirely as a supportive, real-life human mentor using standard human speech, friendly paragraphs, and clear bullet points.
 `;
-
-const CLIENT_API_KEY = "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
 
 export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Greetings! I am your **Dominator AI Tutor**. 🎓\n\n${
+      content: `Greetings! I'm your Academic Tutor. 🎓\n\n${
         selectedDept 
-          ? `Tailored copy for **${selectedDept}** (courses like *${courses.slice(0, 3).join(', ')}*).` 
-          : "Please select a department above for custom suggestions."
-      } Ask me anything to get textbook download links, Amharic notes, exam blueprints, and weekly study plans instantly!`
+          ? `Customized for **${selectedDept}** with *${courses.slice(0, 3).join(', ')}*.` 
+          : "Please select a department to customize study guides!"
+      }\n\nAsk me any freshman study questions or ask to download study guides!`
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [currentPromptIdx, setCurrentPromptIdx] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentPromptIdx((prev) => (prev + 1) % QUICK_PROMPTS.length);
-    }, 7000);
-    return () => clearInterval(timer);
-  }, []);
+  const [activePromptIdx, setActivePromptIdx] = useState(0);
+  const [customClientApiKey, setCustomClientApiKey] = useState(() => {
+    return localStorage.getItem('custom_gemini_api_key') || '';
+  });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -167,6 +162,15 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
     scrollToBottom();
   }, [messages, isLoading]);
 
+  useEffect(() => {
+    if (messages.length === 1) {
+      const interval = setInterval(() => {
+        setActivePromptIdx((prev) => (prev + 1) % QUICK_PROMPTS.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [messages.length]);
+
   const handleSend = async (textToSend: string) => {
     if (!textToSend.trim() || isLoading) return;
 
@@ -176,22 +180,15 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
     setInput('');
     setIsLoading(true);
 
-    let replyText = "";
-    let fetchedSuccessfully = false;
-    let serverErrorDetails = "";
+    const currentMessagesContext = [...messages, userMessage];
 
-    // Phase 1: Try local Express server endpoint
     try {
-      // Ensure the history always starts with a user turn as required by Gemini
-      const allMessages = [...messages, userMessage];
-      const firstUserIndex = allMessages.findIndex(msg => msg.role === 'user');
-      const filteredMessages = firstUserIndex !== -1 ? allMessages.slice(firstUserIndex) : allMessages;
-
+      // 1. Try to fetch from the local server endpoint
       const response = await fetch('/api/ai-tutor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: filteredMessages,
+          messages: currentMessagesContext,
           userContext: {
             department: selectedDept,
             courses: courses
@@ -199,98 +196,60 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
         })
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        replyText = data.reply;
-        fetchedSuccessfully = true;
-      } else {
-        const errData = await response.json().catch(() => ({}));
-        serverErrorDetails = errData.error || `Server responded with status ${response.status}`;
-        console.warn("Express server returned error response, falling back to direct request...", serverErrorDetails);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server responded with status ${response.status}`);
       }
+
+      const data = await response.json();
+      setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
     } catch (err: any) {
-      serverErrorDetails = err.message || "Network request failed";
-      console.warn("Express server endpoint failed or unreachable, falling back to direct client-side gemini request...", err);
-    }
-
-    // Phase 2: Client-side robust fallback (Direct REST API request)
-    if (!fetchedSuccessfully) {
+      console.warn("AI Tutor Express backend is unreachable or returned error. Resorting to modern standalone client fallback...", err);
+      
       try {
-        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CLIENT_API_KEY}`;
+        // 2. Direct-to-Gemini standalone client fallback using the modern @google/genai SDK
+        const clientApiKey = localStorage.getItem('custom_gemini_api_key') || 
+                             ((import.meta as any).env?.VITE_GEMINI_API_KEY || "") as string;
         
-        // Ensure the history always starts with a user turn as required by Gemini
-        const allMessages = [...messages, userMessage];
-        const firstUserIndex = allMessages.findIndex(msg => msg.role === 'user');
-        const filteredMessages = firstUserIndex !== -1 ? allMessages.slice(firstUserIndex) : allMessages;
+        if (!clientApiKey) {
+          throw new Error(
+            "Express backend API is unavailable/unreachable (standalone static deployment detected). " +
+            "Please paste or add your own Gemini API Key below in the input form to run queries directly from the client."
+          );
+        }
 
-        const rawHistory = filteredMessages.map(msg => ({
+        const ai = new GoogleGenAI({ apiKey: clientApiKey });
+        
+        // Enrich system prompt instruction with student profile
+        let instructions = CLIENT_LOCAL_KNOWLEDGE_INSTRUCTION;
+        const enrolledCourses = Array.isArray(courses) ? courses.join(", ") : "None";
+        instructions += `\n\nCURRENT STUDENT PROFILE:\n- Selected Department: ${selectedDept || 'Not specified yet'}\n- Enrolled Freshman Courses: ${enrolledCourses}\n`;
+
+        // Map messages chain to compatible role & structure
+        const contents = currentMessagesContext.map(msg => ({
           role: msg.role === 'assistant' ? 'model' : 'user',
           parts: [{ text: msg.content }]
         }));
 
-        const sysInstructionText = LOCAL_KNOWLEDGE_INSTRUCTION + 
-          `\n\nCURRENT STUDENT PROFILE:\n- Selected Department: ${selectedDept || 'Not selected yet'}\n- Enrolled Freshman Courses: ${(courses || []).join(', ')}\n`;
-
-        const directRes = await fetch(fallbackEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: rawHistory,
-            systemInstruction: {
-              parts: [{ text: sysInstructionText }]
-            },
-            generationConfig: {
-              temperature: 0.7,
-            }
-          })
+        // Execute generation on-the-fly from the client browser
+        const result = await ai.models.generateContent({
+          model: "gemini-3.5-flash",
+          contents: contents,
+          config: {
+            systemInstruction: instructions,
+            temperature: 0.7,
+          }
         });
 
-        if (!directRes.ok) {
-          const directErrData = await directRes.json().catch(() => ({}));
-          const directErrMsg = directErrData?.error?.message || `Status ${directRes.status}`;
-          throw new Error(`Direct API response error: ${directErrMsg}`);
-        }
-
-        const rawData = await directRes.json();
-        replyText = rawData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-        if (replyText) {
-          fetchedSuccessfully = true;
-        } else {
-          throw new Error("Received empty text response from direct API fallback.");
-        }
-      } catch (clientErr: any) {
-        console.error("Direct browser fallback client error:", clientErr);
-        const combinedError = serverErrorDetails 
-          ? `Tutor is currently offline. Server error: "${serverErrorDetails}". Direct fallback error: "${clientErr.message || "Connection blocked"}". Please verify your internet connection or API key Settings in Google AI Studio.`
-          : `Connection error: ${clientErr.message || "Something went wrong. Please try again."}`;
-        setErrorMsg(combinedError);
+        const reply = result.text || "No reply available from client-side fallback. Please try again.";
+        setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      } catch (fallbackErr: any) {
+        console.error("Standalone tutor fallback execution failed:", fallbackErr);
+        setErrorMsg(fallbackErr.message || "Something went wrong. Standalone client failed to connect to Gemini.");
       }
+    } finally {
+      setIsLoading(false);
     }
-
-    if (fetchedSuccessfully && replyText) {
-      // Clean accidental outer JSON string triggers
-      let finalReply = replyText;
-      const trimmed = finalReply.trim();
-      if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
-        try {
-          const parsed = JSON.parse(trimmed);
-          if (parsed.reply) finalReply = parsed.reply;
-          else if (parsed.message) finalReply = parsed.message;
-          else if (parsed.text) finalReply = parsed.text;
-          else {
-            const stringKeys = Object.keys(parsed).filter(k => typeof parsed[k] === "string");
-            if (stringKeys.length > 0) finalReply = parsed[stringKeys[0]];
-          }
-        } catch {
-          // Keep original text
-        }
-      }
-      setMessages(prev => [...prev, { role: 'assistant', content: finalReply }]);
-    }
-
-    setIsLoading(false);
   };
 
   // Render text containing markdown links correctly (simple inline parser for [text](url) and bold **text**)
@@ -460,51 +419,39 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
 
       {/* Suggested Promotions */}
       {messages.length === 1 && (
-        <div className="px-6 pb-3">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-gold-500/80" />
-              Suggested Guide (Tap to ask):
-            </p>
-            <button
-              onClick={() => setCurrentPromptIdx((prev) => (prev + 1) % QUICK_PROMPTS.length)}
-              type="button"
-              id="next-suggested-btn"
-              className="text-[10px] text-slate-500 hover:text-gold-400 font-medium flex items-center gap-0.5 px-2 py-0.5 rounded bg-white/5 border border-white/5 active:scale-95 transition-all"
-            >
-              Try another
-            </button>
-          </div>
+        <div className="px-4 pb-3">
           <AnimatePresence mode="wait">
             <motion.button
-              key={currentPromptIdx}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 0.85, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              whileHover={{ opacity: 1, scale: 1.01 }}
-              transition={{ duration: 0.3 }}
+              key={activePromptIdx}
+              initial={{ opacity: 0.1, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0.1, y: -4 }}
+              transition={{ duration: 0.45 }}
               type="button"
-              id={`quick-prompt-${currentPromptIdx}`}
-              onClick={() => handleSend(QUICK_PROMPTS[currentPromptIdx].prompt)}
-              className="w-full bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 p-2 px-3 text-left transition-all rounded-lg flex items-center justify-between gap-3 group text-xs text-slate-300 active:scale-[0.99]"
+              id={`quick-prompt-${activePromptIdx}`}
+              onClick={() => handleSend(QUICK_PROMPTS[activePromptIdx].prompt)}
+              className="w-full glass-card hover:bg-white/10 border border-white/5 py-2 px-3 text-left transition-all rounded-xl flex items-center justify-between gap-3 group"
             >
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div className="p-1 rounded-md bg-white/5 text-gold-400 group-hover:text-gold-300 transition-colors shrink-0">
-                  {(() => {
-                    const IconComp = QUICK_PROMPTS[currentPromptIdx].icon;
-                    return <IconComp className="w-3.5 h-3.5" />;
-                  })()}
-                </div>
+                <Sparkles className="w-3.5 h-3.5 text-gold-400 shrink-0 opacity-80 animate-pulse" />
                 <div className="min-w-0 flex-1">
-                  <span className="font-semibold text-slate-200 block text-[11px] leading-tight group-hover:text-white transition-colors">
-                    {QUICK_PROMPTS[currentPromptIdx].label}
+                  <span className="text-xs font-semibold text-white truncate block">
+                    {QUICK_PROMPTS[activePromptIdx].label}
                   </span>
-                  <span className="text-[10px] text-slate-500 block truncate mt-0.5 group-hover:text-slate-400 transition-colors">
-                    {QUICK_PROMPTS[currentPromptIdx].prompt}
+                  <span className="text-[10px] text-slate-400 truncate block mt-0.5 font-sans">
+                    {QUICK_PROMPTS[activePromptIdx].prompt}
                   </span>
                 </div>
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-gold-400 transition-colors shrink-0 ml-1" />
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActivePromptIdx((prev) => (prev + 1) % QUICK_PROMPTS.length);
+                }}
+                className="text-[9px] font-bold text-gold-400 bg-white/5 border border-white/10 hover:bg-white/10 px-2 py-1 rounded shrink-0 transition-all cursor-pointer inline-flex items-center gap-1 active:scale-95"
+              >
+                Next Prompt →
+              </span>
             </motion.button>
           </AnimatePresence>
         </div>
@@ -512,21 +459,58 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
 
       {/* Error Message */}
       {errorMsg && (
-        <div className="mx-6 mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-3 items-start">
-          <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <h5 className="text-sm font-semibold text-red-200">Connection Issue</h5>
-            <p className="text-xs text-red-300 mt-1">{errorMsg}</p>
-            <div className="mt-2.5 flex items-center gap-3">
+        <div className="mx-6 mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex flex-col gap-3">
+          <div className="flex gap-3 items-start w-full">
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h5 className="text-sm font-semibold text-red-200">Connection Issue</h5>
+              <p className="text-xs text-red-300 mt-1">{errorMsg}</p>
+            </div>
+          </div>
+          
+          <div className="w-full mt-1.5 pt-3 border-t border-white/5 flex flex-col gap-3">
+            {/* Direct Input Field for API Key */}
+            <div className="bg-slate-900/60 p-3 rounded-lg border border-white/5">
+              <label className="block text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5 font-mono">
+                Add Gemini API Key Yourself (Client Fallback):
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  placeholder="Paste your AIzaSy... API key here"
+                  value={customClientApiKey}
+                  onChange={(e) => {
+                    const val = e.target.value.trim();
+                    setCustomClientApiKey(val);
+                    localStorage.setItem('custom_gemini_api_key', val);
+                  }}
+                  className="bg-slate-950/80 border border-white/10 text-xs text-white rounded px-2.5 py-1.5 flex-1 focus:outline-none focus:border-gold-500/40 font-mono"
+                />
+                {customClientApiKey && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCustomClientApiKey('');
+                      localStorage.removeItem('custom_gemini_api_key');
+                    }}
+                    className="text-[10px] text-red-400 hover:text-red-300 px-2 py-1 font-semibold"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => handleSend(messages[messages.length - 1]?.content || "Hello")}
-                className="text-xs font-semibold text-gold-400 hover:text-gold-300 flex items-center gap-1 bg-white/5 px-2.5 py-1 rounded border border-white/10"
+                className="text-xs font-semibold text-gold-400 hover:text-gold-300 flex items-center gap-1 bg-white/5 px-2.5 py-1.5 rounded border border-white/10 active:scale-95 transition-all"
               >
-                <RefreshCw className="w-3 h-3" /> Retry
+                <RefreshCw className="w-3 h-3" /> Retry Request
               </button>
-              <span className="text-[10px] text-slate-400">
-                Ensure process.env.GEMINI_API_KEY is configured in Settings.
+              <span className="text-[10px] text-slate-400 font-mono text-right">
+                Standalone browser-side client flow
               </span>
             </div>
           </div>
