@@ -163,9 +163,9 @@ async function startServer() {
         personalizedInstruction += `\n\nCURRENT STUDENT PROFILE:\n- Selected Department: ${userContext.department || 'Not selected yet'}\n- Enrolled Freshman Courses: ${courseList}\n`;
       }
 
-      // Generate response using gemini-3.5-flash
+      // Generate response using gemini-2.5-flash
       const response = await genAI.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: genAiContents,
         config: {
           systemInstruction: personalizedInstruction,

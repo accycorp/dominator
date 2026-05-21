@@ -178,6 +178,7 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
 
     let replyText = "";
     let fetchedSuccessfully = false;
+    let serverErrorDetails = "";
 
     // Phase 1: Try local Express server endpoint
     try {
@@ -202,8 +203,13 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
         const data = await response.json();
         replyText = data.reply;
         fetchedSuccessfully = true;
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        serverErrorDetails = errData.error || `Server responded with status ${response.status}`;
+        console.warn("Express server returned error response, falling back to direct request...", serverErrorDetails);
       }
-    } catch (err) {
+    } catch (err: any) {
+      serverErrorDetails = err.message || "Network request failed";
       console.warn("Express server endpoint failed or unreachable, falling back to direct client-side gemini request...", err);
     }
 
@@ -242,17 +248,24 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
         });
 
         if (!directRes.ok) {
-          throw new Error(`Direct API response error status: ${directRes.status}`);
+          const directErrData = await directRes.json().catch(() => ({}));
+          const directErrMsg = directErrData?.error?.message || `Status ${directRes.status}`;
+          throw new Error(`Direct API response error: ${directErrMsg}`);
         }
 
         const rawData = await directRes.json();
         replyText = rawData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
         if (replyText) {
           fetchedSuccessfully = true;
+        } else {
+          throw new Error("Received empty text response from direct API fallback.");
         }
       } catch (clientErr: any) {
         console.error("Direct browser fallback client error:", clientErr);
-        setErrorMsg(clientErr.message || "Something went wrong. Please check your web connection.");
+        const combinedError = serverErrorDetails 
+          ? `Tutor is currently offline. Server error: "${serverErrorDetails}". Direct fallback error: "${clientErr.message || "Connection blocked"}". Please verify your internet connection or API key Settings in Google AI Studio.`
+          : `Connection error: ${clientErr.message || "Something went wrong. Please try again."}`;
+        setErrorMsg(combinedError);
       }
     }
 
