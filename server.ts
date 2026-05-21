@@ -11,7 +11,7 @@ let aiClient: GoogleGenAI | null = null;
 
 function getAiClient(): GoogleGenAI {
   if (!aiClient) {
-    const apiKey = process.env.GEMINI_API_KEY || "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY environment variable is not configured. Please add your key in Settings > Secrets.");
     }
@@ -159,9 +159,9 @@ async function startServer() {
         personalizedInstruction += `\n\nCURRENT STUDENT PROFILE:\n- Selected Department: ${userContext.department || 'Not selected yet'}\n- Enrolled Freshman Courses: ${courseList}\n`;
       }
 
-      // Generate response using gemini-2.5-flash
+      // Generate response using gemini-3.5-flash
       const response = await genAI.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.5-flash",
         contents: genAiContents,
         config: {
           systemInstruction: personalizedInstruction,

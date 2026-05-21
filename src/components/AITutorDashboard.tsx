@@ -132,8 +132,6 @@ YOUR MISSION & CONSTRAINTS:
 7. **CRITICAL MANDATE: ONLY RESPOND IN NATURAL HUMAN LANGUAGE.** Absolutely do NOT output any robotic elements, programming dictionaries/JSON maps, raw system status codes, database listings, or non-human data tags. The response must sound 100% human-crafted, warm, and natural. Do not outline technical JSON responses, debug metadata, or systemic codes unless the user is specifically debugging a specific code structure in a programming class. Always speak entirely as a supportive, real-life human mentor using standard human speech, friendly paragraphs, and clear bullet points.
 `;
 
-const CLIENT_API_KEY = (import.meta as any).env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
-
 export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -171,7 +169,7 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
     let replyText = "";
     let fetchedSuccessfully = false;
 
-    // Phase 1: Try local Express server endpoint
+    // Call local Express server endpoint securely
     try {
       const response = await fetch('/api/ai-tutor', {
         method: 'POST',
@@ -189,53 +187,13 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
         const data = await response.json();
         replyText = data.reply;
         fetchedSuccessfully = true;
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `Server error (Status: ${response.status})`);
       }
-    } catch (err) {
-      console.warn("Express server endpoint failed or unreachable, falling back to direct client-side gemini request...", err);
-    }
-
-    // Phase 2: Client-side robust fallback (Direct REST API request)
-    if (!fetchedSuccessfully) {
-      try {
-        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CLIENT_API_KEY}`;
-        
-        const rawHistory = [...messages, userMessage].map(msg => ({
-          role: msg.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: msg.content }]
-        }));
-
-        const sysInstructionText = LOCAL_KNOWLEDGE_INSTRUCTION + 
-          `\n\nCURRENT STUDENT PROFILE:\n- Selected Department: ${selectedDept || 'Not selected yet'}\n- Enrolled Freshman Courses: ${(courses || []).join(', ')}\n`;
-
-        const directRes = await fetch(fallbackEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: rawHistory,
-            systemInstruction: {
-              parts: [{ text: sysInstructionText }]
-            },
-            generationConfig: {
-              temperature: 0.7,
-            }
-          })
-        });
-
-        if (!directRes.ok) {
-          throw new Error(`Direct API response error status: ${directRes.status}`);
-        }
-
-        const rawData = await directRes.json();
-        replyText = rawData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-        if (replyText) {
-          fetchedSuccessfully = true;
-        }
-      } catch (clientErr: any) {
-        console.error("Direct browser fallback client error:", clientErr);
-        setErrorMsg(clientErr.message || "Something went wrong. Please check your web connection.");
-      }
+    } catch (err: any) {
+      console.error("AI Tutor server request error:", err);
+      setErrorMsg(err.message || "Failed to reach the AI Tutor server. Please check your connection and try again.");
     }
 
     if (fetchedSuccessfully && replyText) {
