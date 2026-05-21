@@ -197,7 +197,7 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
     // Phase 2: Client-side robust fallback (Direct REST API request)
     if (!fetchedSuccessfully) {
       try {
-        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${CLIENT_API_KEY}`;
+        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CLIENT_API_KEY}`;
         
         const rawHistory = [...messages, userMessage].map(msg => ({
           role: msg.role === 'assistant' ? 'model' : 'user',
