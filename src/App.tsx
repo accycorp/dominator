@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from './lib/supabase';
 import { RobustFileViewer } from './components/RobustFileViewer';
 import { StudyPlanDashboard } from './components/StudyPlanDashboard';
+import { AITutorDashboard } from './components/AITutorDashboard';
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -221,7 +222,7 @@ enum View {
 }
 
 type Department = 'Pre-engineering' | 'Pre-medicine' | 'Other natural science' | 'Pharmacy';
-type ResourceType = 'Module' | 'Amharic+English note' | 'Short note' | 'Practice question' | 'Previous exams' | 'Study plan';
+type ResourceType = 'Module' | 'Amharic+English note' | 'Short note' | 'Practice question' | 'Previous exams' | 'Study plan' | 'AI Tutor';
 type Course = string;
 
 // --- Constants ---
@@ -240,6 +241,7 @@ const RESOURCES: { id: ResourceType; icon: any }[] = [
   { id: 'Practice question', icon: ClipboardCheck },
   { id: 'Previous exams', icon: GraduationCap },
   { id: 'Study plan', icon: Calendar },
+  { id: 'AI Tutor', icon: Sparkles },
 ];
 
 const COURSES: Course[] = [
@@ -703,8 +705,8 @@ export default function App() {
           {currentView === View.COURSE && (
             <ViewContainer 
               key="course"
-              title={selectedResource === 'Study plan' ? 'Study Dashboard' : 'Select a Course'}
-              subtitle={selectedResource === 'Study plan' ? 'Your weekly path to success' : `Choose a subject to study your ${selectedResource}`}
+              title={selectedResource === 'Study plan' ? 'Study Dashboard' : selectedResource === 'AI Tutor' ? 'AI Freshman Tutor' : 'Select a Course'}
+              subtitle={selectedResource === 'Study plan' ? 'Your weekly path to success' : selectedResource === 'AI Tutor' ? 'Personal academic mentor with local coursework knowledge' : `Choose a subject to study your ${selectedResource}`}
               onBack={() => setCurrentView(View.RESOURCE)}
             >
               {selectedResource === 'Study plan' ? (
@@ -712,6 +714,12 @@ export default function App() {
                 <StudyPlanDashboard 
                   selectedDept={selectedDept} 
                   courses={selectedDept ? DEPARTMENT_COURSES[selectedDept] : COURSES} 
+                />
+              ) : selectedResource === 'AI Tutor' ? (
+                /* AI Tutor Dashboard */
+                <AITutorDashboard
+                  selectedDept={selectedDept}
+                  courses={selectedDept ? DEPARTMENT_COURSES[selectedDept] : COURSES}
                 />
               ) : (
                 /* Course Selection Grid */
