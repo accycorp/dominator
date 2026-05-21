@@ -1,8 +1,6 @@
-import { useState, useRef, useEffect, FormEvent } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Send, Sparkles, User, Bot, AlertCircle, RefreshCw, BookOpen, ArrowRight, HelpCircle, Key, Settings } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
-import { LOCAL_KNOWLEDGE_INSTRUCTION } from '../lib/tutorConfig';
+import { Send, Sparkles, User, Bot, AlertCircle, RefreshCw, BookOpen, ArrowRight, HelpCircle } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -37,6 +35,105 @@ const QUICK_PROMPTS = [
   }
 ];
 
+const LOCAL_KNOWLEDGE_INSTRUCTION = `
+You are the "Dominator AI Academic Tutor", the official premium companion assistant for Ethiopian freshman university students.
+Your goal is to guide students across different departments and courses, recommending notes, study methods, modules, and helping them master their subjects.
+
+DEPARTMENT INFORMATION:
+1. Pre-engineering
+   - Courses: Anthropology, Global Affairs, Emerging Technology, Computer Programming, Communicative English II, Applied Mathematics, History
+2. Pre-medicine
+   - Courses: Anthropology, Organic Chemistry, Economics, Emerging Technology, Communicative English II, History, Inclusiveness, Entrepreneurship, Global Affairs
+3. Pharmacy
+   - Courses: Anthropology, General Chemistry, Biology, Economics, Emerging Technology, Communicative English II, History
+4. Other natural science
+   - Courses: Anthropology, General Chemistry, Biology, Economics, Emerging Technology, Communicative English II, History
+
+RESOURCES & LINKS THAT YOU CAN RECOMMEND:
+If a student asks for notes, you can name them and provide these exact URLs so they can download or view them. Do not change these URLs under any circumstance.
+
+Modules (Freshman Textbooks):
+- Anthropology: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Anthropology.pdf
+- Applied Mathematics: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Applied%20Mathmatics.pdf
+- Communicative English II: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Communicative%20English%20Language%20Skills%20II.pdf
+- Computer Programming: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Computer%20Programming.pdf
+- General Chemistry: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/General%20Chemistry.pdf
+- Organic Chemistry: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/General%20Chemistry.pdf
+- Biology: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Genral%20Biology.pdf
+- Global Affairs: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Global%20Affiars.pdf
+- History: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/History.pdf
+- Economics: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Introduction%20to%20Economics.pdf
+- Emerging Technology: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Introduction%20to%20Emerging%20Technologies%20.pdf
+
+Amharic + English Bilingual Notes:
+- History: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/DOMINATOR_Premium_Bilingual_Notes.pdf
+- Anthropology: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Anthropology_Handbook%20(1).pdf
+- Emerging Technology: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/dominator_master_handbook.pdf
+- Global Affairs: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Global_Affairs_Dominator_Bilingual_Notes.pdf
+- Economics: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Economics_Bilingual_Handbook_Units_4_5.pdf
+
+Short Notes & Specific Summaries:
+- Applied Mathematics (Units 3-4): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/MTDominator_Units3_4_Notes.pdf
+- Anthropology (Unit 4 - Marginalized Groups): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/AT_Unit4_Marginalized_Groups_Notes%20(1).pdf
+- Anthropology (Unit 5 - Identity & Multiculturalism): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/AT_Unit5_Ethnicity_Identity_Multiculturalism_Notes.pdf
+- Global Affairs (Unit 2 - Foreign Policy): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GA_Unit2_Foreign_Policy_Notes.pdf
+- Global Affairs (Unit 3 - IPE): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GA_Unit3_IPE_Notes_Dominator.pdf
+- Global Affairs (Unit 4 - Globalization): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GA_Unit4_Globalization_Regionalism_Notes.pdf
+- Computer Programming (Chapter 3 - Control Structures): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPControlStructures_Chapter3_Dominator.pdf
+- Computer Programming (Chapter 4 - Functions): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPChapter4_Functions_Notes%20(1).pdf
+- Computer Programming (Chapter 5 - Arrays): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPArrays_Chapter5_Dominator%20(1).pdf
+- Communicative English II (Grammar Guide): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_English_Grammar_Guide.pdf
+- Biology (Units 4-5): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/General_Biology_Units4_5_Notes%20(2).pdf
+- History (Freshman Units 5-6): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/HIST102_Units5_6_StudyNotes.pdf
+- Emerging Technology (Unit 4 - IoT): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/ETUnit4_IoT_Notes.pdf
+- Emerging Technology (Unit 5 & 6): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_Premium_Unit5_6_Notes%20(1).pdf
+- Economics (Units 4-5): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Economics_Units_4_5_Notes%20(1).pdf
+- Pre-medicine Organic Chemistry (Unit 4-5): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/OCDominator_Organic_Chem_Ch4_5_Notes-1.pdf
+- Pre-medicine Organic Chemistry (Unit 6-7): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_Organic_Chem_Ch6_7_Notes%20(1).pdf
+- Other natural science General Chemistry (Units 4-5): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GCDominator_Full_Explanatory_Chemistry_Notes_Units4_5.pdf
+
+Practice Questions:
+- Anthropology Units 4-5: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ANTH1012_Units4and5_Question_Bank.pdf
+- Anthropology Unit 6: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ANTH1012_Unit6_Question_Bank1.pdf
+- Global Affairs Chapter 2: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/GA_Chapter2_ForeignPolicy_ExamBank.pdf
+- Global Affairs Unit 3: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/GA_Unit3_IPE_Advanced_QBank_Dominator.pdf
+- Global Affairs Chapter 4: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/GA_Chapter4_Globalization_Regionalism_ExamBank-1.pdf
+- Computer Programming Chapters 3 & 4: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/CPDominator_Chapter3_Exam.pdf
+- Emerging Technology Unit 4: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ET_Chapter4_IoT_ExamBank.pdf
+- Emerging Technology Unit 5: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ET_Unit5_AR_Exam.pdf
+- Emerging Technology Unit 6: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ET_Unit6_Ethics_Exam.pdf
+- English Grammar Guide Worksheet: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Dominator_English_Question_Bank.pdf
+- History Quiz Chapters 5-6: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Dominator_History_Quiz_Ch5_6.pdf
+- Biology Units 4-5 Question set: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Biology_Units4_5_Exam.pdf
+- Economics Units 4-5 Exam: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ECDominator_Units4_5_Exam%20(1).pdf
+
+Previous Exams:
+- Applied Mathematics Final 1: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_AppliedMath1_Final_Exam_Solutions.pdf
+- Applied Mathematics Final 2: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_CP_Final_Exam_Solutions_2024.pdf
+- Emerging Technology Full Blueprint: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Emerging_Technologies_Comprehensive_Master_Blueprint_Solutions.pdf
+- Anthropology Final Exam 1 (2015 EC): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_SocialAnthropology_Anth1012_FinalExam_2015EC_Answered.pdf
+- Anthropology Final Exam 2 (Bahir Dar University): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Bahirdar_University_Anthropology_Final_Exam_Comprehensive_Solutions.pdf
+- Anthropology Final Exam 3 (2016): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Bahir_Dar_University_Anthropology_Final_Exam_2016_Solutions.pdf
+- Global Affairs Final 1: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_GlobalTrends_2017_Final_Exam_Complete_Answers.pdf
+- Global Affairs Final 2: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_GlobalTrends_Final_Exam_Complete_Answers.pdf
+- History Final Exam 1 (2016): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_History_2016_Exam_Answers.pdf
+- Computer Programming C++ Exam Solutions: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/CPP_Exam_FullSolutions_v2.pdf
+- English Final Exam Solutions 2: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/ENFLEn1011_Exam_Answers.pdf
+- English Final Exam Solutions 3: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/ENFLEn1011_Full_Answers.pdf
+- General Chemistry Solutions (Other natural science): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Dominator_GeneralChemistry_Solutions.pdf
+
+YOUR MISSION & CONSTRAINTS:
+1. Speak in an encouraging, academic, structured, and warm voice. Feel free to use phrases typical of supportive tutors.
+2. Under no circumstance make up references that do not exist in the above list. Only mention the notes, questions, exams, or modules that are explicitly specified above, and always use their exact URLs so the user can easily download or open them in a click. Use markdown link syntax: [Name of Resource](URL).
+3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources and outline a plan.
+4. Keep answers clean, readable, in formatted Markdown (with headings, bold text, bullet points), and deep.
+5. If the user asks general academic freshman questions (e.g., how to study for Mathematics or Organic chemistry, how to handle essay writing, explain key topics in iot or emerging technologies), give excellent explanations with reference to our specialized material!
+6. Always output standard markdown. Do not include any HTML tags. Since you are an expert freshman academic tutor in Ethiopia, you are highly specialized in helping them succeed.
+7. **CRITICAL MANDATE: ONLY RESPOND IN NATURAL HUMAN LANGUAGE.** Absolutely do NOT output any robotic elements, programming dictionaries/JSON maps, raw system status codes, database listings, or non-human data tags. The response must sound 100% human-crafted, warm, and natural. Do not outline technical JSON responses, debug metadata, or systemic codes unless the user is specifically debugging a specific code structure in a programming class. Always speak entirely as a supportive, real-life human mentor using standard human speech, friendly paragraphs, and clear bullet points.
+`;
+
+const CLIENT_API_KEY = "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
+
 export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -51,10 +148,6 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isStandalone, setIsStandalone] = useState(false);
-  const [showKeySettings, setShowKeySettings] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const [needsApiKey, setNeedsApiKey] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -66,155 +159,118 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
     scrollToBottom();
   }, [messages, isLoading]);
 
-  // Pre-emptively check for standalone execution / server presence
-  useEffect(() => {
-    fetch('/api/health')
-      .then(res => {
-        if (!res.ok) {
-          setIsStandalone(true);
-        }
-      })
-      .catch(() => {
-        setIsStandalone(true);
-      });
-
-    // Check if an API key is saved or pre-defined
-    const storedKey = localStorage.getItem('GEMINI_API_KEY') || localStorage.getItem('VITE_GEMINI_API_KEY');
-    const systemKey = (import.meta as any).env.VITE_GEMINI_API_KEY;
-    if (storedKey) {
-      setApiKeyInput(storedKey);
-    } else if (systemKey) {
-      setApiKeyInput(systemKey);
-    }
-  }, []);
-
-  const handleSaveApiKey = (e?: FormEvent) => {
-    if (e) e.preventDefault();
-    if (!apiKeyInput.trim()) return;
-    localStorage.setItem('GEMINI_API_KEY', apiKeyInput.trim());
-    setNeedsApiKey(false);
-    setShowKeySettings(false);
-    setErrorMsg(null);
-  };
-
-  const handleClearApiKey = () => {
-    localStorage.removeItem('GEMINI_API_KEY');
-    localStorage.removeItem('VITE_GEMINI_API_KEY');
-    setApiKeyInput('');
-    setNeedsApiKey(true);
-    setErrorMsg("API Key cleared. Please configure a key to use Standalone Client Mode.");
-  };
-
   const handleSend = async (textToSend: string) => {
     if (!textToSend.trim() || isLoading) return;
 
     setErrorMsg(null);
     const userMessage: Message = { role: 'user', content: textToSend };
-    const updatedMessages = [...messages, userMessage];
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     let replyText = "";
-    let useClientFallback = false;
+    let fetchedSuccessfully = false;
 
-    // Try server call if not running under standalone client mode
-    if (!isStandalone) {
-      try {
-        const response = await fetch('/api/ai-tutor', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: updatedMessages,
-            userContext: {
-              department: selectedDept,
-              courses: courses
-            }
-          })
-        });
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            useClientFallback = true;
-            setIsStandalone(true);
-          } else {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `Server responded with status ${response.status}`);
+    // Phase 1: Try local Express server endpoint
+    try {
+      const response = await fetch('/api/ai-tutor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+          userContext: {
+            department: selectedDept,
+            courses: courses
           }
-        } else {
-          const data = await response.json();
-          replyText = data.reply;
-        }
-      } catch (err: any) {
-        console.warn("Backend unavailable or returned error. Falling back to client-side resolver.", err);
-        setIsStandalone(true);
-        useClientFallback = true;
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        replyText = data.reply;
+        fetchedSuccessfully = true;
       }
-    } else {
-      useClientFallback = true;
+    } catch (err) {
+      console.warn("Express server endpoint failed or unreachable, falling back to direct client-side gemini request...", err);
     }
 
-    if (useClientFallback) {
+    // Phase 2: Client-side robust fallback (Direct REST API request)
+    if (!fetchedSuccessfully) {
       try {
-        const apiKey = localStorage.getItem('GEMINI_API_KEY') || 
-                       localStorage.getItem('VITE_GEMINI_API_KEY') || 
-                       (import.meta as any).env.VITE_GEMINI_API_KEY;
-
-        if (!apiKey) {
-          setNeedsApiKey(true);
-          setShowKeySettings(true);
-          throw new Error("Missing Gemini API Key. Since you are running in Standalone Client Mode (exported outside AI Studio), you must set your Gemini API Key first.");
-        }
-
-        const ai = new GoogleGenAI({
-          apiKey: apiKey,
-          httpOptions: {
-            headers: {
-              'User-Agent': 'aistudio-build'
-            }
-          }
-        });
-
-        const genAiContents = updatedMessages.map(msg => ({
+        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CLIENT_API_KEY}`;
+        
+        const rawHistory = [...messages, userMessage].map(msg => ({
           role: msg.role === 'assistant' ? 'model' : 'user',
           parts: [{ text: msg.content }]
         }));
 
-        let personalizedInstruction = LOCAL_KNOWLEDGE_INSTRUCTION;
-        if (selectedDept) {
-          personalizedInstruction += `\n\nCURRENT USER SESSION CONTEXT:\n- Selected Department: ${selectedDept}\n- Current Course Catalog: ${JSON.stringify(courses || [])}\n`;
-        }
+        const sysInstructionText = LOCAL_KNOWLEDGE_INSTRUCTION + 
+          `\n\nCURRENT STUDENT PROFILE:\n- Selected Department: ${selectedDept || 'Not selected yet'}\n- Enrolled Freshman Courses: ${(courses || []).join(', ')}\n`;
 
-        const genResponse = await ai.models.generateContent({
-          model: "gemini-3.5-flash",
-          contents: genAiContents,
-          config: {
-            systemInstruction: personalizedInstruction,
-            temperature: 0.7,
-          }
+        const directRes = await fetch(fallbackEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: rawHistory,
+            systemInstruction: {
+              parts: [{ text: sysInstructionText }]
+            },
+            generationConfig: {
+              temperature: 0.7,
+            }
+          })
         });
 
-        replyText = genResponse.text || "I apologize, but I could not formulate a reply. Please try again.";
-        setMessages(prev => [...prev, { role: 'assistant', content: replyText }]);
-      } catch (err: any) {
-        console.error("Client-side resolve error:", err);
-        setErrorMsg(err.message || "Failed to contact Gemini API. Confirm your internet connection and API Key.");
-      } finally {
-        setIsLoading(false);
+        if (!directRes.ok) {
+          throw new Error(`Direct API response error status: ${directRes.status}`);
+        }
+
+        const rawData = await directRes.json();
+        replyText = rawData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        if (replyText) {
+          fetchedSuccessfully = true;
+        }
+      } catch (clientErr: any) {
+        console.error("Direct browser fallback client error:", clientErr);
+        setErrorMsg(clientErr.message || "Something went wrong. Please check your web connection.");
       }
-    } else {
-      setMessages(prev => [...prev, { role: 'assistant', content: replyText }]);
-      setIsLoading(false);
     }
+
+    if (fetchedSuccessfully && replyText) {
+      // Clean accidental outer JSON string triggers
+      let finalReply = replyText;
+      const trimmed = finalReply.trim();
+      if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (parsed.reply) finalReply = parsed.reply;
+          else if (parsed.message) finalReply = parsed.message;
+          else if (parsed.text) finalReply = parsed.text;
+          else {
+            const stringKeys = Object.keys(parsed).filter(k => typeof parsed[k] === "string");
+            if (stringKeys.length > 0) finalReply = parsed[stringKeys[0]];
+          }
+        } catch {
+          // Keep original text
+        }
+      }
+      setMessages(prev => [...prev, { role: 'assistant', content: finalReply }]);
+    }
+
+    setIsLoading(false);
   };
 
   // Render text containing markdown links correctly (simple inline parser for [text](url) and bold **text**)
   const renderMessageContent = (text: string) => {
+    // Basic formatting replacement
     const lines = text.split('\n');
     return lines.map((line, i) => {
       // Parse markdown bold
       let parsed = line;
       
+      // Identify markdown links [label](url) and replace with anchor tags styled like gold links
       const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
       const parts: Array<{ type: 'text' | 'link'; text: string; url?: string }> = [];
       let lastIndex = 0;
@@ -235,13 +291,14 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
       return (
         <p key={i} className="mb-2 leading-relaxed text-sm text-slate-200">
           {parts.length === 0 ? (
+            // Just simple text with potential bolding
             renderBoldText(line)
           ) : (
             parts.map((p, idx) => {
               if (p.type === 'link') {
                 return (
                   <a
-                    key={idx}
+                    key={`link-${idx}`}
                     href={p.url}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -252,7 +309,7 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
                   </a>
                 );
               }
-              return renderBoldText(p.text);
+              return <span key={`text-span-${idx}`}>{renderBoldText(p.text)}</span>;
             })
           )}
         </p>
@@ -268,14 +325,26 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
 
     while ((match = boldRegex.exec(text)) !== null) {
       if (match.index > lastIndex) {
-        parts.push(text.substring(lastIndex, match.index));
+        parts.push(
+          <span key={`text-${lastIndex}`}>
+            {text.substring(lastIndex, match.index)}
+          </span>
+        );
       }
-      parts.push(<strong key={match.index} className="text-white font-bold">{match[1]}</strong>);
+      parts.push(
+        <strong key={`bold-${match.index}`} className="text-white font-bold">
+          {match[1]}
+        </strong>
+      );
       lastIndex = boldRegex.lastIndex;
     }
 
     if (lastIndex < text.length) {
-      parts.push(text.substring(lastIndex));
+      parts.push(
+        <span key={`text-end-${lastIndex}`}>
+          {text.substring(lastIndex)}
+        </span>
+      );
     }
 
     return parts.length === 0 ? text : <>{parts}</>;
@@ -292,24 +361,12 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
           <div>
             <h4 className="text-white font-semibold font-display tracking-tight text-sm">Dominator AI Scholar</h4>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className={`w-2 h-2 rounded-full ${isStandalone ? 'bg-amber-500' : 'bg-emerald-500'} animate-pulse`} />
-              <span className="text-xs text-slate-400 font-mono">
-                {isStandalone ? 'Standalone Client Mode' : 'Expert Freshman Knowledge'}
-              </span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs text-slate-400 font-mono">Expert Freshman Knowledge</span>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {isStandalone && (
-            <button
-              onClick={() => setShowKeySettings(!showKeySettings)}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-gold-400 transition-colors"
-              title="Configure API Key"
-              type="button"
-            >
-              <Key className="w-4 h-4" />
-            </button>
-          )}
           {selectedDept && (
             <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-gold-400 font-medium">
               {selectedDept}
@@ -317,49 +374,6 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
           )}
         </div>
       </div>
-
-      {/* Standalone Key Management Drawer */}
-      <AnimatePresence>
-        {isStandalone && showKeySettings && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="bg-slate-900/90 border-b border-white/5 overflow-hidden"
-          >
-            <div className="p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="flex-1">
-                <p className="text-xs text-slate-300 font-semibold mb-1">Set Gemini API Key for Standalone Client Mode</p>
-                <p className="text-[10px] text-slate-400">Your key remains entirely local to your browser and is never uploaded anywhere.</p>
-              </div>
-              <form onSubmit={handleSaveApiKey} className="flex gap-2 flex-1 max-w-sm">
-                <input
-                  type="password"
-                  placeholder="AIzaSy..."
-                  value={apiKeyInput}
-                  onChange={(e) => setApiKeyInput(e.target.value)}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold-500"
-                />
-                <button
-                  type="submit"
-                  className="px-3 py-1.5 rounded-lg bg-gold-400 hover:bg-gold-500 text-slate-950 font-semibold text-xs transition-colors"
-                >
-                  Save
-                </button>
-                {apiKeyInput && (
-                  <button
-                    type="button"
-                    onClick={handleClearApiKey}
-                    className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-xs transition-colors"
-                  >
-                    Clear
-                  </button>
-                )}
-              </form>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -442,43 +456,24 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
         </div>
       )}
 
-      {/* Error Message / Setup Prompt */}
+      {/* Error Message */}
       {errorMsg && (
         <div className="mx-6 mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-3 items-start">
           <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <h5 className="text-sm font-semibold text-red-200">
-              {needsApiKey ? "API Key Needed" : "Connection Issue"}
-            </h5>
+            <h5 className="text-sm font-semibold text-red-200">Connection Issue</h5>
             <p className="text-xs text-red-300 mt-1">{errorMsg}</p>
-            <div className="mt-2.5 flex flex-col gap-2">
-              {needsApiKey ? (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setShowKeySettings(true);
-                      const keyInputEl = document.querySelector('input[type="password"]') as HTMLInputElement;
-                      if (keyInputEl) keyInputEl.focus();
-                    }}
-                    className="text-xs font-semibold text-gold-400 hover:text-gold-300 flex items-center gap-1 bg-white/5 px-2.5 py-1 rounded border border-white/10"
-                  >
-                    <Key className="w-3 h-3" /> Enter API Key
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => handleSend(messages[messages.length - 1]?.content || "Hello")}
-                    className="text-xs font-semibold text-gold-400 hover:text-gold-300 flex items-center gap-1 bg-white/5 px-2.5 py-1 rounded border border-white/10"
-                  >
-                    <RefreshCw className="w-3 h-3" /> Retry
-                  </button>
-                  <span className="text-[10px] text-slate-400">
-                    If run on standalone client, toggle the key settings icon on the header to configure your key.
-                  </span>
-                </div>
-              )}
+            <div className="mt-2.5 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => handleSend(messages[messages.length - 1]?.content || "Hello")}
+                className="text-xs font-semibold text-gold-400 hover:text-gold-300 flex items-center gap-1 bg-white/5 px-2.5 py-1 rounded border border-white/10"
+              >
+                <RefreshCw className="w-3 h-3" /> Retry
+              </button>
+              <span className="text-[10px] text-slate-400">
+                Ensure process.env.GEMINI_API_KEY is configured in Settings.
+              </span>
             </div>
           </div>
         </div>
@@ -511,4 +506,3 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
     </div>
   );
 }
-
