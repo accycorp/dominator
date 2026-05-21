@@ -126,26 +126,28 @@ YOUR MISSION & CONSTRAINTS:
 1. Speak in an encouraging, academic, structured, and warm voice. Feel free to use phrases typical of supportive tutors.
 2. Under no circumstance make up references that do not exist in the above list. Only mention the notes, questions, exams, or modules that are explicitly specified above, and always use their exact URLs so the user can easily download or open them in a click. Use markdown link syntax: [Name of Resource](URL).
 3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources and outline a plan.
-4. Keep answers clean, readable, in formatted Markdown (with headings, bold text, bullet points), and deep.
+4. Keep answers clean, readable, in formatted Markdown (with headings, bold text, bullet points), and highly concise.
 5. If the user asks general academic freshman questions (e.g., how to study for Mathematics or Organic chemistry, how to handle essay writing, explain key topics in iot or emerging technologies), give excellent explanations with reference to our specialized material!
 6. Always output standard markdown. Do not include any HTML tags. Since you are an expert freshman academic tutor in Ethiopia, you are highly specialized in helping them succeed.
 7. **CRITICAL MANDATE: ONLY RESPOND IN NATURAL HUMAN LANGUAGE.** Absolutely do NOT output any robotic elements, programming dictionaries/JSON maps, raw system status codes, database listings, or non-human data tags. The response must sound 100% human-crafted, warm, and natural. Do not outline technical JSON responses, debug metadata, or systemic codes unless the user is specifically debugging a specific code structure in a programming class. Always speak entirely as a supportive, real-life human mentor using standard human speech, friendly paragraphs, and clear bullet points.
+8. **MOBILE VIEW CONSTRAINT (CRITICAL):** Your responses MUST be very short, concise, and direct (max 2-3 short paragraphs or 3-4 bullet points). Always get straight to the point to make it comfortable to read on small mobile screens. Keep explanations brief and highlight key links immediately.
 `;
 
 export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Greetings! I am your **Dominator AI Academic Tutor**. 🎓\n\nI have complete local knowledge of your university catalog, freshmen study modules, Amharic + English bilingual notes, and past examination keys.\n\n${
+      content: `Greetings! I am your **AI Tutor**. 🎓 I have your freshmen textbooks, past exam keys, and bilingual notes.\n\n${
         selectedDept 
-          ? `I see you are in the **${selectedDept}** department. You have courses like *${courses.slice(0, 4).join(', ')}* and more.` 
-          : "Please select a department to help me tailor your academic success!"
-      }\n\nAsk me anything! For example, you can ask me to recommend specific units, explain tricky concepts, or give you direct download links for our notes!`
+          ? `I see you are in **${selectedDept}**. Ask me to recommend notes or explain any concept!` 
+          : "Select a department above, or ask me any question to start!"
+      }`
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [activePromptIdx, setActivePromptIdx] = useState(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -156,6 +158,13 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActivePromptIdx((prev) => (prev + 1) % QUICK_PROMPTS.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSend = async (textToSend: string) => {
     if (!textToSend.trim() || isLoading) return;
@@ -388,28 +397,39 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
       {/* Suggested Promotions */}
       {messages.length === 1 && (
         <div className="px-6 pb-2">
-          <p className="text-xs text-slate-400 font-medium mb-2 flex items-center gap-1.5">
+          <p className="text-xs text-slate-400 font-medium mb-1.5 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-            Suggested Questions with Local Files:
+            Suggested Question (tap to ask):
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {QUICK_PROMPTS.map((qp, idx) => (
-              <button
-                key={idx}
+          <div className="h-14 relative overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.button
+                key={activePromptIdx}
                 type="button"
-                id={`quick-prompt-${idx}`}
-                onClick={() => handleSend(qp.prompt)}
-                className="glass-card hover:bg-white/10 border border-white/5 p-3 text-left transition-all rounded-xl flex items-start gap-2.5 group"
+                id={`quick-prompt-${activePromptIdx}`}
+                onClick={() => handleSend(QUICK_PROMPTS[activePromptIdx].prompt)}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.4 }}
+                className="w-full h-full glass-card hover:bg-white/10 border border-gold-500/10 p-2.5 text-left transition-all rounded-xl flex items-center gap-2.5 group"
               >
-                <div className="p-1.5 rounded-lg bg-white/5 text-gold-400 group-hover:text-gold-200 transition-colors">
-                  <qp.icon className="w-3.5 h-3.5" />
+                <div className="p-1.5 rounded-lg bg-gold-400/10 text-gold-400 shrink-0">
+                  {(() => {
+                    const Icon = QUICK_PROMPTS[activePromptIdx].icon;
+                    return <Icon className="w-3.5 h-3.5" />;
+                  })()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h5 className="text-xs font-semibold text-white truncate">{qp.label}</h5>
-                  <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">{qp.prompt}</p>
+                  <h5 className="text-[11px] font-semibold text-white truncate">
+                    {QUICK_PROMPTS[activePromptIdx].label}
+                  </h5>
+                  <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                    {QUICK_PROMPTS[activePromptIdx].prompt}
+                  </p>
                 </div>
-              </button>
-            ))}
+              </motion.button>
+            </AnimatePresence>
           </div>
         </div>
       )}
