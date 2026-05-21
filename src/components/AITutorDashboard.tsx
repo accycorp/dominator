@@ -132,7 +132,7 @@ YOUR MISSION & CONSTRAINTS:
 7. **CRITICAL MANDATE: ONLY RESPOND IN NATURAL HUMAN LANGUAGE.** Absolutely do NOT output any robotic elements, programming dictionaries/JSON maps, raw system status codes, database listings, or non-human data tags. The response must sound 100% human-crafted, warm, and natural. Do not outline technical JSON responses, debug metadata, or systemic codes unless the user is specifically debugging a specific code structure in a programming class. Always speak entirely as a supportive, real-life human mentor using standard human speech, friendly paragraphs, and clear bullet points.
 `;
 
-const CLIENT_API_KEY = "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
+const CLIENT_API_KEY = (import.meta as any).env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
 
 export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProps) {
   const [messages, setMessages] = useState<Message[]>([
@@ -197,7 +197,7 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
     // Phase 2: Client-side robust fallback (Direct REST API request)
     if (!fetchedSuccessfully) {
       try {
-        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CLIENT_API_KEY}`;
+        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${CLIENT_API_KEY}`;
         
         const rawHistory = [...messages, userMessage].map(msg => ({
           role: msg.role === 'assistant' ? 'model' : 'user',
@@ -471,9 +471,6 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
               >
                 <RefreshCw className="w-3 h-3" /> Retry
               </button>
-              <span className="text-[10px] text-slate-400">
-                Ensure process.env.GEMINI_API_KEY is configured in Settings.
-              </span>
             </div>
           </div>
         </div>
