@@ -117,12 +117,11 @@ Previous Exams:
 YOUR MISSION & CONSTRAINTS:
 1. Speak in an encouraging, academic, structured, and warm voice. Feel free to use phrases typical of supportive tutors.
 2. Under no circumstance make up references that do not exist in the above list. Only mention the notes, questions, exams, or modules that are explicitly specified above, and always use their exact URLs so the user can easily download or open them in a click. Use markdown link syntax: [Name of Resource](URL).
-3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources.
-4. Keep answers extremely short, concise, and direct (maximum of 2-3 brief sentences or concise bullet points). It must be optimized for phone/mobile viewing where screen space is premium. Do not provide long or verbose explanations.
-5. If the user asks general academic freshmen questions, explain them in maximum 1-2 sentences with direct references.
+3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources and outline a plan.
+4. Keep answers clean, readable, in formatted Markdown (with headings, bold text, bullet points), and deep.
+5. If the user asks general academic freshman questions (e.g., how to study for Mathematics or Organic chemistry, how to handle essay writing, explain key topics in iot or emerging technologies), give excellent explanations with reference to our specialized material!
 6. Always output standard markdown. Do not include any HTML tags. Since you are an expert freshman academic tutor in Ethiopia, you are highly specialized in helping them succeed.
-7. **CRITICAL MANDATE: ONLY RESPOND IN NATURAL HUMAN LANGUAGE.** Absolutely do NOT output any robotic elements, programming dictionaries/JSON maps, raw system status codes, database listings, or non-human data tags. The response must sound 100% human-crafted, warm, and natural. Always keep responses very brief, and speak entirely as a supportive, real-life human mentor using standard human speech and extremely brief paragraphs.
-8. **MOBILE VIEWING CONSTRAINT**: The user is using a mobile phone. Limit response length strictly to keep scrolling to a minimum. Avoid unnecessary introductory text or empty pleasantries. Get straight to the point.
+7. **CRITICAL MANDATE: ONLY RESPOND IN NATURAL HUMAN LANGUAGE.** Absolutely do NOT output any robotic elements, programming dictionaries/JSON maps, raw system status codes, database listings, or non-human data tags. The response must sound 100% human-crafted, warm, and natural. Do not outline technical JSON responses, debug metadata, or systemic codes unless the user is specifically debugging a specific code structure in a programming class. Always speak entirely as a supportive, real-life human mentor using standard human speech, friendly paragraphs, and clear bullet points.
 `;
 
 async function startServer() {
@@ -151,10 +150,13 @@ async function startServer() {
         parts: [{ text: msg.content }]
       }));
 
-      // Enrich instructions with userContext if available
+      // Enrich instructions with userContext if available without using any JSON formatting
       let personalizedInstruction = LOCAL_KNOWLEDGE_INSTRUCTION;
       if (userContext) {
-        personalizedInstruction += `\n\nCURRENT USER SESSION CONTEXT:\n- Selected Department: ${userContext.department || 'Not selected yet'}\n- Current Course Catalog: ${JSON.stringify(userContext.courses || [])}\n`;
+        const courseList = Array.isArray(userContext.courses) 
+          ? userContext.courses.join(", ") 
+          : "Not loaded yet";
+        personalizedInstruction += `\n\nCURRENT STUDENT PROFILE:\n- Selected Department: ${userContext.department || 'Not selected yet'}\n- Enrolled Freshman Courses: ${courseList}\n`;
       }
 
       // Generate response using gemini-3.5-flash
@@ -167,7 +169,31 @@ async function startServer() {
         }
       });
 
-      const replyText = response.text || "I apologize, but I could not formulate a reply. Please try again.";
+      let replyText = response.text || "I apologize, but I could not formulate a reply. Please try again.";
+
+      // Guard: If the model accidentally outputted a JSON map string due to previous message context, parse it to extract pure text
+      const trimmedReply = replyText.trim();
+      if (trimmedReply.startsWith("{") && trimmedReply.endsWith("}")) {
+        try {
+          const parsed = JSON.parse(trimmedReply);
+          if (parsed.reply) {
+            replyText = parsed.reply;
+          } else if (parsed.message) {
+            replyText = parsed.message;
+          } else if (parsed.text) {
+            replyText = parsed.text;
+          } else {
+            // Find any string property and use it
+            const stringKeys = Object.keys(parsed).filter(k => typeof parsed[k] === "string");
+            if (stringKeys.length > 0) {
+              replyText = parsed[stringKeys[0]];
+            }
+          }
+        } catch (e) {
+          // If parse fails, keep the original text
+        }
+      }
+      
       res.json({ reply: replyText });
     } catch (error: any) {
       console.error("AI Tutor Error:", error);

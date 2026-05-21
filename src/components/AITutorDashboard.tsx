@@ -39,23 +39,18 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Greetings! I'm your **Dominator AI Tutor**.${selectedDept ? ` Expert for **${selectedDept}**.` : ""} Ask me about textbooks, bilingual notes, or past exams!`
+      content: `Greetings! I am your **Dominator AI Academic Tutor**. 🎓\n\nI have complete local knowledge of your university catalog, freshmen study modules, Amharic + English bilingual notes, and past examination keys.\n\n${
+        selectedDept 
+          ? `I see you are in the **${selectedDept}** department. You have courses like *${courses.slice(0, 4).join(', ')}* and more.` 
+          : "Please select a department to help me tailor your academic success!"
+      }\n\nAsk me anything! For example, you can ask me to recommend specific units, explain tricky concepts, or give you direct download links for our notes!`
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [promptIndex, setPromptIndex] = useState(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (messages.length > 1) return;
-    const interval = setInterval(() => {
-      setPromptIndex((prev) => (prev + 1) % QUICK_PROMPTS.length);
-    }, 4500);
-    return () => clearInterval(interval);
-  }, [messages.length]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -269,39 +264,29 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
 
       {/* Suggested Promotions */}
       {messages.length === 1 && (
-        <div className="px-6 pb-2.5">
-          <p className="text-[11px] text-slate-400/80 font-medium mb-1.5 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-gold-400/80 animate-pulse" />
-            Suggested Question:
+        <div className="px-6 pb-2">
+          <p className="text-xs text-slate-400 font-medium mb-2 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+            Suggested Questions with Local Files:
           </p>
-          <div className="h-10 relative">
-            <AnimatePresence mode="wait">
-              <motion.button
-                key={promptIndex}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {QUICK_PROMPTS.map((qp, idx) => (
+              <button
+                key={idx}
                 type="button"
-                id={`quick-prompt-${promptIndex}`}
-                onClick={() => handleSend(QUICK_PROMPTS[promptIndex].prompt)}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.8, ease: "easeInOut" }}
-                className="absolute inset-x-0 top-0 glass-card bg-white/[0.04] hover:bg-white/[0.08] border border-white/5 px-2.5 py-1.5 text-left transition-all rounded-lg flex items-center gap-2 group w-full cursor-pointer cursor-hand"
+                id={`quick-prompt-${idx}`}
+                onClick={() => handleSend(qp.prompt)}
+                className="glass-card hover:bg-white/10 border border-white/5 p-3 text-left transition-all rounded-xl flex items-start gap-2.5 group"
               >
-                <div className="p-1 rounded-md bg-white/5 text-gold-400 group-hover:text-gold-200 transition-colors shrink-0">
-                  {(() => {
-                    const IconComp = QUICK_PROMPTS[promptIndex].icon;
-                    return <IconComp className="w-3.5 h-3.5" />;
-                  })()}
+                <div className="p-1.5 rounded-lg bg-white/5 text-gold-400 group-hover:text-gold-200 transition-colors">
+                  <qp.icon className="w-3.5 h-3.5" />
                 </div>
-                <div className="flex-1 min-w-0 flex items-center justify-between gap-1.5">
-                  <span className="text-xs text-slate-300 font-medium truncate">
-                    <strong className="font-bold text-white mr-1">{QUICK_PROMPTS[promptIndex].label}</strong>
-                    <span className="text-slate-400">— {QUICK_PROMPTS[promptIndex].prompt}</span>
-                  </span>
-                  <span className="text-[9px] text-gold-500/85 font-bold uppercase tracking-wider shrink-0 bg-gold-500/10 px-1.5 py-0.5 rounded border border-gold-500/20">Ask</span>
+                <div className="flex-1 min-w-0">
+                  <h5 className="text-xs font-semibold text-white truncate">{qp.label}</h5>
+                  <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">{qp.prompt}</p>
                 </div>
-              </motion.button>
-            </AnimatePresence>
+              </button>
+            ))}
           </div>
         </div>
       )}
