@@ -133,6 +133,58 @@ YOUR MISSION & CONSTRAINTS:
 7. **CRITICAL MANDATE: ONLY RESPOND IN NATURAL HUMAN LANGUAGE.** Absolutely do NOT output any robotic elements, programming dictionaries/JSON maps, raw system status codes, database listings, or non-human data tags. The response must sound 100% human-crafted, warm, and natural. Do not outline technical JSON responses, debug metadata, or systemic codes unless the user is specifically debugging a specific code structure in a programming class. Always speak entirely as a supportive, real-life human mentor using standard human speech, friendly paragraphs, and clear bullet points.
 `;
 
+function getLocalStaticReply(query: string, dept: string, courses: string[]): string {
+  const q = query.toLowerCase();
+  
+  if (q.includes("short notes") || q.includes("available") || q.includes("which short")) {
+    let res = `📚 **Offline Companion Active** 🎓\n\nHere are the top high-yield short notes for your current selection:\n\n`;
+    const list: string[] = [];
+    if (dept === "Pre-engineering") {
+      list.push(`- [Applied Mathematics Units 3-4 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/MTDominator_Units3_4_Notes.pdf)`);
+      list.push(`- [C++ Control Structures Chapter 3](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPControlStructures_Chapter3_Dominator.pdf)`);
+      list.push(`- [C++ Functions Chapter 4 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPChapter4_Functions_Notes%20(1).pdf)`);
+    } else if (dept === "Pre-medicine") {
+      list.push(`- [Organic Chemistry Units 4-5 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/OCDominator_Organic_Chem_Ch4_5_Notes-1.pdf)`);
+      list.push(`- [Organic Chemistry Units 6-7 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_Organic_Chem_Ch6_7_Notes%20(1).pdf)`);
+      list.push(`- [Anthropology Unit 4 Marginals](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/AT_Unit4_Marginalized_Groups_Notes%20(1).pdf)`);
+    } else {
+      list.push(`- [General Chemistry Units 4-5 Explanations](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GCDominator_Full_Explanatory_Chemistry_Notes_Units4_5.pdf)`);
+      list.push(`- [General Biology Units 4-5 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/General_Biology_Units4_5_Notes%20(2).pdf)`);
+      list.push(`- [Economics Units 4-5 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Economics_Units_4_5_Notes%20(1).pdf)`);
+    }
+    list.push(`- [Emerging Technology IoT Unit 4](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/ETUnit4_IoT_Notes.pdf)`);
+    list.push(`- [History Premium Study Notes Units 5-6](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/HIST102_Units5_6_StudyNotes.pdf)`);
+    
+    return res + list.slice(0, 4).join("\n") + `\n\nThese will prepare you exceptionally for university examinations!`;
+  }
+
+  if (q.includes("amharic") || q.includes("bilingual") || q.includes("dual language") || q.includes("bilingual handbooks")) {
+    return `🇪🇹 **Bilingual Amharic + English Handbooks**\n\nYes! We have premium bilingual study notes that break down difficult concepts with side-by-side Amharic explanations:\n\n- [History Bilingual Premium Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/DOMINATOR_Premium_Bilingual_Notes.pdf)\n- [Anthropology Bilingual Handbook](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Anthropology_Handbook%20(1).pdf)\n- [Emerging Tech Bilingual Master Handbook](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/dominator_master_handbook.pdf)\n- [Global Affairs Bilingual Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Global_Affairs_Dominator_Bilingual_Notes.pdf)\n\nRead English first, check Amharic for abstract topics, and summarize after each section!`;
+  }
+
+  if (q.includes("routine") || q.includes("weekly study") || q.includes("schedule") || q.includes("freshman") || q.includes("strategy")) {
+    return `📅 **Strategic Freshman Weekly Masterplan**\n\nFollow this high-yield, proven sequence to dominate your freshman courses:\n\n- **Mon & Wed (Heavy Concept)**: 2hrs on Math, Chem, or Programing. Solve solved exams like the [Applied Math Final Solutions](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_AppliedMath1_Final_Exam_Solutions.pdf).\n- **Tue & Thu (Reading Subjects)**: 1hr studying from [History Bilingual Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/DOMINATOR_Premium_Bilingual_Notes.pdf) or Anthropology.\n- **Fri (Assessment Drill)**: Train with the [Anthropology Unit 4-5 Question Bank](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ANTH1012_Units4and5_Question_Bank.pdf).\n- **Sat & Sun (Emerging Tech & Revision)**: Master Unit 4 IoT with [Emerging Tech IoT Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/ETUnit4_IoT_Notes.pdf) and attempt the quiz!`;
+  }
+
+  if (q.includes("iot") || q.includes("internet of things") || q.includes("emerging") || q.includes("tech")) {
+    return `🌐 **IoT and Emerging Tech (Unit 4/5/6)**\n\nInternet of Things (IoT) bridges physical objects with digital systems using smart sensors, acts, and networks. Here are your premium revision assets:\n\n- [Emerging Tech Unit 4 (IoT) Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/ETUnit4_IoT_Notes.pdf)\n- [Emerging Tech Unit 5 & 6 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_Premium_Unit5_6_Notes%20(1).pdf)\n- [IoT Chapter 4 Practice Questions](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ET_Chapter4_IoT_ExamBank.pdf)\n\nDownload these blueprints instantly to secure your straight A's!`;
+  }
+
+  // Fallback default response that introduces active links tailored to department!
+  let response = `✨ **Freshman Tutor Assistant** 🎓\n\nI've loaded your core department handouts for ${dept || "your Freshman studies"}. Choose any below to open/download:\n\n`;
+  if (dept === "Pre-engineering") {
+    response += `- [Applied Mathematics Short Notes Units 3-4](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/MTDominator_Units3_4_Notes.pdf)\n- [Computer Programming Arrays Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPArrays_Chapter5_Dominator%20(1).pdf)\n- [C++ programming Past Exam solutions](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/CPP_Exam_FullSolutions_v2.pdf)\n`;
+  } else if (dept === "Pre-medicine") {
+    response += `- [Organic Chemistry Ch 4-5 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/OCDominator_Organic_Chem_Ch4_5_Notes-1.pdf)\n- [Organic Chemistry Ch 6-7 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_Organic_Chem_Ch6_7_Notes%20(1).pdf)\n- [Biology Practice Exam](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Biology_Units4_5_Exam.pdf)\n`;
+  } else if (dept === "Pharmacy") {
+    response += `- [General Biology Units 4-5 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/General_Biology_Units4_5_Notes%20(2).pdf)\n- [Anthropology Master Handbook](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Anthropology_Handbook%20(1).pdf)\n- [History Quiz Chapters 5-6](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Dominator_History_Quiz_Ch5_6.pdf)\n`;
+  } else {
+    response += `- [General Chemistry Explanatory Notes Units 4-5](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GCDominator_Full_Explanatory_Chemistry_Notes_Units4_5.pdf)\n- [Chemistry Solutions Blueprint](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Dominator_GeneralChemistry_Solutions.pdf)\n`;
+  }
+  response += `\n*Ask me specific questions regarding any topic, course syllabus, bilingual handbooks, or exams!*`;
+  return response;
+}
+
 export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -245,7 +297,9 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
         setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
       } catch (fallbackErr: any) {
         console.error("Standalone tutor fallback execution failed:", fallbackErr);
-        setErrorMsg(fallbackErr.message || "Something went wrong. Standalone client failed to connect to Gemini.");
+        setErrorMsg("Gemini API connection failed. But don't worry, I've loaded your smart offline companion resources below!");
+        const localReply = getLocalStaticReply(textToSend, selectedDept, courses);
+        setMessages(prev => [...prev, { role: 'assistant', content: localReply }]);
       }
     } finally {
       setIsLoading(false);
