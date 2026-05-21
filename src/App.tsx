@@ -57,13 +57,16 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
       return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/DOMINATOR_Premium_Bilingual_Notes.pdf';
     }
     if (course === 'Anthropology') {
-      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Anthropology_Course_Notes%20(1).pdf';
+      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Anthropology_Handbook%20(1).pdf';
     }
     if (course === 'Emerging Technology') {
       return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/dominator_master_handbook.pdf';
     }
     if (course === 'Global Affairs') {
-      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Global_Trends.pdf';
+      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Global_Affairs_Dominator_Bilingual_Notes.pdf';
+    }
+    if (course === 'Economics' || course === 'economics') {
+      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Economics_Bilingual_Handbook_Units_4_5.pdf';
     }
   }
 
@@ -87,8 +90,8 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
       if (noteName === 'Note 2' || noteName === 'Dominator note (Note 2)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPChapter4_Functions_Notes%20(1).pdf';
       if (noteName === 'Note 3' || noteName === 'Dominator note (Note 3)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPArrays_Chapter5_Dominator%20(1).pdf';
     }
-    if (course === 'Communicative English II') {
-      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Communicative_English_II_MasterNotes.pdf';
+    if (course === 'Communicative English II' || course === 'english') {
+      if (noteName === 'Note 1' || noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_English_Grammar_Guide.pdf';
     }
     if (course === 'Biology') {
       if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/General_Biology_Units4_5_Notes%20(2).pdf';
@@ -135,8 +138,8 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
       if (noteName === 'Exam 2') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ET_Unit5_AR_Exam.pdf';
       if (noteName === 'Exam 3') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ET_Unit6_Ethics_Exam.pdf';
     }
-    if (course === 'Communicative English II' && noteName === 'Exam 1') {
-      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Dominator%20english_Ch3-5%20.pdf';
+    if ((course === 'Communicative English II' || course === 'english') && noteName === 'Exam 1') {
+      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Dominator_English_Question_Bank.pdf';
     }
     if (course === 'History') {
       if (noteName === 'Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Dominator_History_Quiz_Ch5_6.pdf';
