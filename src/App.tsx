@@ -109,6 +109,7 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
       }
       if (dept === 'Pre-medicine') {
         if (noteName === 'Note 1' || noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/OCDominator_Organic_Chem_Ch4_5_Notes-1.pdf';
+        if (noteName === 'Note 2' || noteName === 'Dominator note (Note 2)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_Organic_Chem_Ch6_7_Notes%20(1).pdf';
       }
     }
   }
