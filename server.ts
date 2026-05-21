@@ -150,13 +150,10 @@ async function startServer() {
         parts: [{ text: msg.content }]
       }));
 
-      // Enrich instructions with userContext if available without using any JSON formatting
+      // Enrich instructions with userContext if available
       let personalizedInstruction = LOCAL_KNOWLEDGE_INSTRUCTION;
       if (userContext) {
-        const courseList = Array.isArray(userContext.courses) 
-          ? userContext.courses.join(", ") 
-          : "Not loaded yet";
-        personalizedInstruction += `\n\nCURRENT STUDENT PROFILE:\n- Selected Department: ${userContext.department || 'Not selected yet'}\n- Enrolled Freshman Courses: ${courseList}\n`;
+        personalizedInstruction += `\n\nCURRENT USER SESSION CONTEXT:\n- Selected Department: ${userContext.department || 'Not selected yet'}\n- Current Course Catalog: ${JSON.stringify(userContext.courses || [])}\n`;
       }
 
       // Generate response using gemini-3.5-flash
@@ -169,31 +166,7 @@ async function startServer() {
         }
       });
 
-      let replyText = response.text || "I apologize, but I could not formulate a reply. Please try again.";
-
-      // Guard: If the model accidentally outputted a JSON map string due to previous message context, parse it to extract pure text
-      const trimmedReply = replyText.trim();
-      if (trimmedReply.startsWith("{") && trimmedReply.endsWith("}")) {
-        try {
-          const parsed = JSON.parse(trimmedReply);
-          if (parsed.reply) {
-            replyText = parsed.reply;
-          } else if (parsed.message) {
-            replyText = parsed.message;
-          } else if (parsed.text) {
-            replyText = parsed.text;
-          } else {
-            // Find any string property and use it
-            const stringKeys = Object.keys(parsed).filter(k => typeof parsed[k] === "string");
-            if (stringKeys.length > 0) {
-              replyText = parsed[stringKeys[0]];
-            }
-          }
-        } catch (e) {
-          // If parse fails, keep the original text
-        }
-      }
-      
+      const replyText = response.text || "I apologize, but I could not formulate a reply. Please try again.";
       res.json({ reply: replyText });
     } catch (error: any) {
       console.error("AI Tutor Error:", error);
