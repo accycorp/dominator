@@ -132,7 +132,7 @@ YOUR MISSION & CONSTRAINTS:
 7. **CRITICAL MANDATE: RESPOND WITH EXTREME BREVITY.** Always speak entirely as a supportive, real-life human mentor, but keep it incredibly brief (maximum 2-3 concise lines/sentences) to prevent cluttering the user's phone screen.
 `;
 
-const CLIENT_API_KEY = "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
+const CLIENT_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
 
 export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProps) {
   const [messages, setMessages] = useState<Message[]>([
@@ -202,7 +202,7 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
     // Phase 2: Client-side robust fallback (Direct REST API request)
     if (!fetchedSuccessfully) {
       try {
-        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CLIENT_API_KEY}`;
+        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${CLIENT_API_KEY}`;
         
         const rawHistory = [...messages, userMessage].map(msg => ({
           role: msg.role === 'assistant' ? 'model' : 'user',
