@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Send, Sparkles, User, Bot, AlertCircle, RefreshCw, BookOpen, ArrowRight, HelpCircle } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
+import { Send, Sparkles, User, Bot, AlertCircle, RefreshCw, BookOpen, ArrowRight, HelpCircle, ChevronRight } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -36,7 +35,7 @@ const QUICK_PROMPTS = [
   }
 ];
 
-const CLIENT_LOCAL_KNOWLEDGE_INSTRUCTION = `
+const LOCAL_KNOWLEDGE_INSTRUCTION = `
 You are the "Dominator AI Academic Tutor", the official premium companion assistant for Ethiopian freshman university students.
 Your goal is to guide students across different departments and courses, recommending notes, study methods, modules, and helping them master their subjects.
 
@@ -112,7 +111,7 @@ Previous Exams:
 - Applied Mathematics Final 1: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_AppliedMath1_Final_Exam_Solutions.pdf
 - Applied Mathematics Final 2: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_CP_Final_Exam_Solutions_2024.pdf
 - Emerging Technology Full Blueprint: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Emerging_Technologies_Comprehensive_Master_Blueprint_Solutions.pdf
-- Anthropology Final Exam 1 (2015 EC): https://xlsqnjbklwklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_SocialAnthropology_Anth1012_FinalExam_2015EC_Answered.pdf
+- Anthropology Final Exam 1 (2015 EC): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_SocialAnthropology_Anth1012_FinalExam_2015EC_Answered.pdf
 - Anthropology Final Exam 2 (Bahir Dar University): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Bahirdar_University_Anthropology_Final_Exam_Comprehensive_Solutions.pdf
 - Anthropology Final Exam 3 (2016): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Bahir_Dar_University_Anthropology_Final_Exam_2016_Solutions.pdf
 - Global Affairs Final 1: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/BDU_GlobalTrends_2017_Final_Exam_Complete_Answers.pdf
@@ -126,83 +125,26 @@ Previous Exams:
 YOUR MISSION & CONSTRAINTS:
 1. Speak in an encouraging, academic, structured, and warm voice. Feel free to use phrases typical of supportive tutors.
 2. Under no circumstance make up references that do not exist in the above list. Only mention the notes, questions, exams, or modules that are explicitly specified above, and always use their exact URLs so the user can easily download or open them in a click. Use markdown link syntax: [Name of Resource](URL).
-3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources and outline a plan with minimal steps.
-4. Keep answers extremely short, concise, and brief. Limit the response length to 1-2 small paragraphs or 3-4 simple bullet points maximum. It must be highly compact and optimized for reading on small mobile/phone screens.
-5. If the user asks general academic freshman questions, provide punchy, high-impact answers and reference our specialized materials immediately. No long essays or detailed summaries.
-6. Always output standard markdown. Do not include any HTML tags. Since you are an expert freshman academic tutor in Ethiopia, you are highly specialized in helping them succeed.
-7. **CRITICAL MANDATE: ONLY RESPOND IN NATURAL HUMAN LANGUAGE.** Absolutely do NOT output any robotic elements, programming dictionaries/JSON maps, raw system status codes, database listings, or non-human data tags. The response must sound 100% human-crafted, warm, and natural. Do not outline technical JSON responses, debug metadata, or systemic codes unless the user is specifically debugging a specific code structure in a programming class. Always speak entirely as a supportive, real-life human mentor using standard human speech, friendly paragraphs, and clear bullet points.
+3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources and outline a plan.
+4. Keep answers extremely short, concise, and straight to the point. Avoid lengthy explanations, lists, or verbosity. Try to answer in under 2-3 sentences max.
+5. If the user asks general academic freshman questions, provide highly targeted and ultra-short explanations referencing our specialized materials.
+6. Always output standard markdown. Do not include any HTML tags.
+7. **CRITICAL MANDATE: RESPOND WITH EXTREME BREVITY.** Always speak entirely as a supportive, real-life human mentor, but keep it incredibly brief (maximum 2-3 concise lines/sentences) to prevent cluttering the user's phone screen.
 `;
 
-function getLocalStaticReply(query: string, dept: string, courses: string[]): string {
-  const q = query.toLowerCase();
-  
-  if (q.includes("short notes") || q.includes("available") || q.includes("which short")) {
-    let res = `📚 **Offline Companion Active** 🎓\n\nHere are the top high-yield short notes for your current selection:\n\n`;
-    const list: string[] = [];
-    if (dept === "Pre-engineering") {
-      list.push(`- [Applied Mathematics Units 3-4 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/MTDominator_Units3_4_Notes.pdf)`);
-      list.push(`- [C++ Control Structures Chapter 3](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPControlStructures_Chapter3_Dominator.pdf)`);
-      list.push(`- [C++ Functions Chapter 4 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPChapter4_Functions_Notes%20(1).pdf)`);
-    } else if (dept === "Pre-medicine") {
-      list.push(`- [Organic Chemistry Units 4-5 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/OCDominator_Organic_Chem_Ch4_5_Notes-1.pdf)`);
-      list.push(`- [Organic Chemistry Units 6-7 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_Organic_Chem_Ch6_7_Notes%20(1).pdf)`);
-      list.push(`- [Anthropology Unit 4 Marginals](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/AT_Unit4_Marginalized_Groups_Notes%20(1).pdf)`);
-    } else {
-      list.push(`- [General Chemistry Units 4-5 Explanations](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GCDominator_Full_Explanatory_Chemistry_Notes_Units4_5.pdf)`);
-      list.push(`- [General Biology Units 4-5 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/General_Biology_Units4_5_Notes%20(2).pdf)`);
-      list.push(`- [Economics Units 4-5 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Economics_Units_4_5_Notes%20(1).pdf)`);
-    }
-    list.push(`- [Emerging Technology IoT Unit 4](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/ETUnit4_IoT_Notes.pdf)`);
-    list.push(`- [History Premium Study Notes Units 5-6](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/HIST102_Units5_6_StudyNotes.pdf)`);
-    
-    return res + list.slice(0, 4).join("\n") + `\n\nThese will prepare you exceptionally for university examinations!`;
-  }
-
-  if (q.includes("amharic") || q.includes("bilingual") || q.includes("dual language") || q.includes("bilingual handbooks")) {
-    return `🇪🇹 **Bilingual Amharic + English Handbooks**\n\nYes! We have premium bilingual study notes that break down difficult concepts with side-by-side Amharic explanations:\n\n- [History Bilingual Premium Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/DOMINATOR_Premium_Bilingual_Notes.pdf)\n- [Anthropology Bilingual Handbook](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Anthropology_Handbook%20(1).pdf)\n- [Emerging Tech Bilingual Master Handbook](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/dominator_master_handbook.pdf)\n- [Global Affairs Bilingual Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Global_Affairs_Dominator_Bilingual_Notes.pdf)\n\nRead English first, check Amharic for abstract topics, and summarize after each section!`;
-  }
-
-  if (q.includes("routine") || q.includes("weekly study") || q.includes("schedule") || q.includes("freshman") || q.includes("strategy")) {
-    return `📅 **Strategic Freshman Weekly Masterplan**\n\nFollow this high-yield, proven sequence to dominate your freshman courses:\n\n- **Mon & Wed (Heavy Concept)**: 2hrs on Math, Chem, or Programing. Solve solved exams like the [Applied Math Final Solutions](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_AppliedMath1_Final_Exam_Solutions.pdf).\n- **Tue & Thu (Reading Subjects)**: 1hr studying from [History Bilingual Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/DOMINATOR_Premium_Bilingual_Notes.pdf) or Anthropology.\n- **Fri (Assessment Drill)**: Train with the [Anthropology Unit 4-5 Question Bank](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ANTH1012_Units4and5_Question_Bank.pdf).\n- **Sat & Sun (Emerging Tech & Revision)**: Master Unit 4 IoT with [Emerging Tech IoT Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/ETUnit4_IoT_Notes.pdf) and attempt the quiz!`;
-  }
-
-  if (q.includes("iot") || q.includes("internet of things") || q.includes("emerging") || q.includes("tech")) {
-    return `🌐 **IoT and Emerging Tech (Unit 4/5/6)**\n\nInternet of Things (IoT) bridges physical objects with digital systems using smart sensors, acts, and networks. Here are your premium revision assets:\n\n- [Emerging Tech Unit 4 (IoT) Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/ETUnit4_IoT_Notes.pdf)\n- [Emerging Tech Unit 5 & 6 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_Premium_Unit5_6_Notes%20(1).pdf)\n- [IoT Chapter 4 Practice Questions](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ET_Chapter4_IoT_ExamBank.pdf)\n\nDownload these blueprints instantly to secure your straight A's!`;
-  }
-
-  // Fallback default response that introduces active links tailored to department!
-  let response = `✨ **Freshman Tutor Assistant** 🎓\n\nI've loaded your core department handouts for ${dept || "your Freshman studies"}. Choose any below to open/download:\n\n`;
-  if (dept === "Pre-engineering") {
-    response += `- [Applied Mathematics Short Notes Units 3-4](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/MTDominator_Units3_4_Notes.pdf)\n- [Computer Programming Arrays Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/CPArrays_Chapter5_Dominator%20(1).pdf)\n- [C++ programming Past Exam solutions](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/CPP_Exam_FullSolutions_v2.pdf)\n`;
-  } else if (dept === "Pre-medicine") {
-    response += `- [Organic Chemistry Ch 4-5 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/OCDominator_Organic_Chem_Ch4_5_Notes-1.pdf)\n- [Organic Chemistry Ch 6-7 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_Organic_Chem_Ch6_7_Notes%20(1).pdf)\n- [Biology Practice Exam](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Biology_Units4_5_Exam.pdf)\n`;
-  } else if (dept === "Pharmacy") {
-    response += `- [General Biology Units 4-5 Notes](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/General_Biology_Units4_5_Notes%20(2).pdf)\n- [Anthropology Master Handbook](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Anthropology_Handbook%20(1).pdf)\n- [History Quiz Chapters 5-6](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Dominator_History_Quiz_Ch5_6.pdf)\n`;
-  } else {
-    response += `- [General Chemistry Explanatory Notes Units 4-5](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GCDominator_Full_Explanatory_Chemistry_Notes_Units4_5.pdf)\n- [Chemistry Solutions Blueprint](https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/Dominator_GeneralChemistry_Solutions.pdf)\n`;
-  }
-  response += `\n*Ask me specific questions regarding any topic, course syllabus, bilingual handbooks, or exams!*`;
-  return response;
-}
+const CLIENT_API_KEY = "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
 
 export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Greetings! I'm your Academic Tutor. 🎓\n\n${
-        selectedDept 
-          ? `Customized for **${selectedDept}** with *${courses.slice(0, 3).join(', ')}*.` 
-          : "Please select a department to customize study guides!"
-      }\n\nAsk me any freshman study questions or ask to download study guides!`
+      content: `Greetings! I am your **Dominator AI Tutor**. 🎓\n\nAsk me anything! I can quickly locate freshman notes, textbooks, study strategies, or past exams for you.`
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [activePromptIdx, setActivePromptIdx] = useState(0);
-  const [customClientApiKey, setCustomClientApiKey] = useState(() => {
-    return localStorage.getItem('custom_gemini_api_key') || '';
-  });
+  const [suggestionIndex, setSuggestionIndex] = useState(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -215,12 +157,11 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
   }, [messages, isLoading]);
 
   useEffect(() => {
-    if (messages.length === 1) {
-      const interval = setInterval(() => {
-        setActivePromptIdx((prev) => (prev + 1) % QUICK_PROMPTS.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
+    if (messages.length > 1) return;
+    const interval = setInterval(() => {
+      setSuggestionIndex(prev => (prev + 1) % QUICK_PROMPTS.length);
+    }, 4500);
+    return () => clearInterval(interval);
   }, [messages.length]);
 
   const handleSend = async (textToSend: string) => {
@@ -232,15 +173,16 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
     setInput('');
     setIsLoading(true);
 
-    const currentMessagesContext = [...messages, userMessage];
+    let replyText = "";
+    let fetchedSuccessfully = false;
 
+    // Phase 1: Try local Express server endpoint
     try {
-      // 1. Try to fetch from the local server endpoint
       const response = await fetch('/api/ai-tutor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: currentMessagesContext,
+          messages: [...messages, userMessage],
           userContext: {
             department: selectedDept,
             courses: courses
@@ -248,62 +190,81 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Server responded with status ${response.status}`);
+      if (response.ok) {
+        const data = await response.json();
+        replyText = data.reply;
+        fetchedSuccessfully = true;
       }
+    } catch (err) {
+      console.warn("Express server endpoint failed or unreachable, falling back to direct client-side gemini request...", err);
+    }
 
-      const data = await response.json();
-      setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
-    } catch (err: any) {
-      console.warn("AI Tutor Express backend is unreachable or returned error. Resorting to modern standalone client fallback...", err);
-      
+    // Phase 2: Client-side robust fallback (Direct REST API request)
+    if (!fetchedSuccessfully) {
       try {
-        // 2. Direct-to-Gemini standalone client fallback using the modern @google/genai SDK
-        const clientApiKey = localStorage.getItem('custom_gemini_api_key') || 
-                             ((import.meta as any).env?.VITE_GEMINI_API_KEY || "") as string;
+        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CLIENT_API_KEY}`;
         
-        if (!clientApiKey) {
-          throw new Error(
-            "Express backend API is unavailable/unreachable (standalone static deployment detected). " +
-            "Please paste or add your own Gemini API Key below in the input form to run queries directly from the client."
-          );
-        }
-
-        const ai = new GoogleGenAI({ apiKey: clientApiKey });
-        
-        // Enrich system prompt instruction with student profile
-        let instructions = CLIENT_LOCAL_KNOWLEDGE_INSTRUCTION;
-        const enrolledCourses = Array.isArray(courses) ? courses.join(", ") : "None";
-        instructions += `\n\nCURRENT STUDENT PROFILE:\n- Selected Department: ${selectedDept || 'Not specified yet'}\n- Enrolled Freshman Courses: ${enrolledCourses}\n`;
-
-        // Map messages chain to compatible role & structure
-        const contents = currentMessagesContext.map(msg => ({
+        const rawHistory = [...messages, userMessage].map(msg => ({
           role: msg.role === 'assistant' ? 'model' : 'user',
           parts: [{ text: msg.content }]
         }));
 
-        // Execute generation on-the-fly from the client browser
-        const result = await ai.models.generateContent({
-          model: "gemini-3.5-flash",
-          contents: contents,
-          config: {
-            systemInstruction: instructions,
-            temperature: 0.7,
-          }
+        const sysInstructionText = LOCAL_KNOWLEDGE_INSTRUCTION + 
+          `\n\nCURRENT STUDENT PROFILE:\n- Selected Department: ${selectedDept || 'Not selected yet'}\n- Enrolled Freshman Courses: ${(courses || []).join(', ')}\n`;
+
+        const directRes = await fetch(fallbackEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: rawHistory,
+            systemInstruction: {
+              parts: [{ text: sysInstructionText }]
+            },
+            generationConfig: {
+              temperature: 0.7,
+            }
+          })
         });
 
-        const reply = result.text || "No reply available from client-side fallback. Please try again.";
-        setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
-      } catch (fallbackErr: any) {
-        console.error("Standalone tutor fallback execution failed:", fallbackErr);
-        setErrorMsg("Gemini API connection failed. But don't worry, I've loaded your smart offline companion resources below!");
-        const localReply = getLocalStaticReply(textToSend, selectedDept, courses);
-        setMessages(prev => [...prev, { role: 'assistant', content: localReply }]);
+        if (!directRes.ok) {
+          throw new Error(`Direct API response error status: ${directRes.status}`);
+        }
+
+        const rawData = await directRes.json();
+        replyText = rawData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        if (replyText) {
+          fetchedSuccessfully = true;
+        }
+      } catch (clientErr: any) {
+        console.error("Direct browser fallback client error:", clientErr);
+        setErrorMsg(clientErr.message || "Something went wrong. Please check your web connection.");
       }
-    } finally {
-      setIsLoading(false);
     }
+
+    if (fetchedSuccessfully && replyText) {
+      // Clean accidental outer JSON string triggers
+      let finalReply = replyText;
+      const trimmed = finalReply.trim();
+      if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (parsed.reply) finalReply = parsed.reply;
+          else if (parsed.message) finalReply = parsed.message;
+          else if (parsed.text) finalReply = parsed.text;
+          else {
+            const stringKeys = Object.keys(parsed).filter(k => typeof parsed[k] === "string");
+            if (stringKeys.length > 0) finalReply = parsed[stringKeys[0]];
+          }
+        } catch {
+          // Keep original text
+        }
+      }
+      setMessages(prev => [...prev, { role: 'assistant', content: finalReply }]);
+    }
+
+    setIsLoading(false);
   };
 
   // Render text containing markdown links correctly (simple inline parser for [text](url) and bold **text**)
@@ -473,98 +434,65 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
 
       {/* Suggested Promotions */}
       {messages.length === 1 && (
-        <div className="px-4 pb-3">
-          <AnimatePresence mode="wait">
-            <motion.button
-              key={activePromptIdx}
-              initial={{ opacity: 0.1, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0.1, y: -4 }}
-              transition={{ duration: 0.45 }}
-              type="button"
-              id={`quick-prompt-${activePromptIdx}`}
-              onClick={() => handleSend(QUICK_PROMPTS[activePromptIdx].prompt)}
-              className="w-full glass-card hover:bg-white/10 border border-white/5 py-2 px-3 text-left transition-all rounded-xl flex items-center justify-between gap-3 group"
-            >
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <Sparkles className="w-3.5 h-3.5 text-gold-400 shrink-0 opacity-80 animate-pulse" />
-                <div className="min-w-0 flex-1">
-                  <span className="text-xs font-semibold text-white truncate block">
-                    {QUICK_PROMPTS[activePromptIdx].label}
-                  </span>
-                  <span className="text-[10px] text-slate-400 truncate block mt-0.5 font-sans">
-                    {QUICK_PROMPTS[activePromptIdx].prompt}
-                  </span>
-                </div>
-              </div>
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActivePromptIdx((prev) => (prev + 1) % QUICK_PROMPTS.length);
-                }}
-                className="text-[9px] font-bold text-gold-400 bg-white/5 border border-white/10 hover:bg-white/10 px-2 py-1 rounded shrink-0 transition-all cursor-pointer inline-flex items-center gap-1 active:scale-95"
+        <div className="px-6 pb-2 min-h-[70px] flex flex-col justify-center">
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5 opacity-60">
+            <Sparkles className="w-3 h-3 text-gold-500" />
+            Suggested Question (rotating):
+          </span>
+          <div className="relative overflow-hidden h-[46px] w-full flex items-center">
+            <AnimatePresence mode="wait">
+              <motion.button
+                key={suggestionIndex}
+                initial={{ opacity: 0.1, y: 4, filter: 'brightness(60%)' }}
+                animate={{ opacity: 1, y: 0, filter: 'brightness(100%)' }}
+                exit={{ opacity: 0.1, y: -4, filter: 'brightness(60%)' }}
+                transition={{ duration: 0.7, ease: "easeInOut" }}
+                type="button"
+                id={`quick-prompt-${suggestionIndex}`}
+                onClick={() => handleSend(QUICK_PROMPTS[suggestionIndex].prompt)}
+                className="absolute inset-x-0 w-full glass-card hover:bg-white/10 border border-gold-500/20 hover:border-gold-500/40 py-1.5 px-3.5 text-left rounded-lg flex items-center justify-between group cursor-pointer transition-all duration-300"
               >
-                Next Prompt →
-              </span>
-            </motion.button>
-          </AnimatePresence>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="p-1 rounded bg-gold-500/10 text-gold-400 group-hover:bg-gold-500/20 transition-colors shrink-0">
+                    {(() => {
+                      const Icon = QUICK_PROMPTS[suggestionIndex].icon;
+                      return <Icon className="w-3.5 h-3.5" />;
+                    })()}
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <h5 className="text-[11px] font-bold text-white truncate leading-tight flex items-center gap-1.5">
+                      {QUICK_PROMPTS[suggestionIndex].label}
+                      <span className="w-1 h-1 rounded-full bg-gold-500 animate-ping inline-block" />
+                    </h5>
+                    <p className="text-[9px] text-slate-400 truncate leading-tight max-w-[200px] sm:max-w-md mt-0.5">
+                      {QUICK_PROMPTS[suggestionIndex].prompt}
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-gold-400 transition-colors group-hover:translate-x-0.5 shrink-0" />
+              </motion.button>
+            </AnimatePresence>
+          </div>
         </div>
       )}
 
       {/* Error Message */}
       {errorMsg && (
-        <div className="mx-6 mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex flex-col gap-3">
-          <div className="flex gap-3 items-start w-full">
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h5 className="text-sm font-semibold text-red-200">Connection Issue</h5>
-              <p className="text-xs text-red-300 mt-1">{errorMsg}</p>
-            </div>
-          </div>
-          
-          <div className="w-full mt-1.5 pt-3 border-t border-white/5 flex flex-col gap-3">
-            {/* Direct Input Field for API Key */}
-            <div className="bg-slate-900/60 p-3 rounded-lg border border-white/5">
-              <label className="block text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5 font-mono">
-                Add Gemini API Key Yourself (Client Fallback):
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="password"
-                  placeholder="Paste your AIzaSy... API key here"
-                  value={customClientApiKey}
-                  onChange={(e) => {
-                    const val = e.target.value.trim();
-                    setCustomClientApiKey(val);
-                    localStorage.setItem('custom_gemini_api_key', val);
-                  }}
-                  className="bg-slate-950/80 border border-white/10 text-xs text-white rounded px-2.5 py-1.5 flex-1 focus:outline-none focus:border-gold-500/40 font-mono"
-                />
-                {customClientApiKey && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCustomClientApiKey('');
-                      localStorage.removeItem('custom_gemini_api_key');
-                    }}
-                    className="text-[10px] text-red-400 hover:text-red-300 px-2 py-1 font-semibold"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between gap-3">
+        <div className="mx-6 mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-3 items-start">
+          <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h5 className="text-sm font-semibold text-red-200">Connection Issue</h5>
+            <p className="text-xs text-red-300 mt-1">{errorMsg}</p>
+            <div className="mt-2.5 flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => handleSend(messages[messages.length - 1]?.content || "Hello")}
-                className="text-xs font-semibold text-gold-400 hover:text-gold-300 flex items-center gap-1 bg-white/5 px-2.5 py-1.5 rounded border border-white/10 active:scale-95 transition-all"
+                className="text-xs font-semibold text-gold-400 hover:text-gold-300 flex items-center gap-1 bg-white/5 px-2.5 py-1 rounded border border-white/10"
               >
-                <RefreshCw className="w-3 h-3" /> Retry Request
+                <RefreshCw className="w-3 h-3" /> Retry
               </button>
-              <span className="text-[10px] text-slate-400 font-mono text-right">
-                Standalone browser-side client flow
+              <span className="text-[10px] text-slate-400">
+                Ensure process.env.GEMINI_API_KEY is configured in Settings.
               </span>
             </div>
           </div>

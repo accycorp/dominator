@@ -11,7 +11,7 @@ let aiClient: GoogleGenAI | null = null;
 
 function getAiClient(): GoogleGenAI {
   if (!aiClient) {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY environment variable is not configured. Please add your key in Settings > Secrets.");
     }
@@ -117,11 +117,11 @@ Previous Exams:
 YOUR MISSION & CONSTRAINTS:
 1. Speak in an encouraging, academic, structured, and warm voice. Feel free to use phrases typical of supportive tutors.
 2. Under no circumstance make up references that do not exist in the above list. Only mention the notes, questions, exams, or modules that are explicitly specified above, and always use their exact URLs so the user can easily download or open them in a click. Use markdown link syntax: [Name of Resource](URL).
-3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources and outline a plan with minimal steps.
-4. Keep answers extremely short, concise, and brief. Limit the response length to 1-2 small paragraphs or 3-4 simple bullet points maximum. It must be highly compact and optimized for reading on small mobile/phone screens.
-5. If the user asks general academic freshman questions, provide punchy, high-impact answers and reference our specialized materials immediately. No long essays or detailed summaries.
-6. Always output standard markdown. Do not include any HTML tags. Since you are an expert freshman academic tutor in Ethiopia, you are highly specialized in helping them succeed.
-7. **CRITICAL MANDATE: ONLY RESPOND IN NATURAL HUMAN LANGUAGE.** Absolutely do NOT output any robotic elements, programming dictionaries/JSON maps, raw system status codes, database listings, or non-human data tags. The response must sound 100% human-crafted, warm, and natural. Do not outline technical JSON responses, debug metadata, or systemic codes unless the user is specifically debugging a specific code structure in a programming class. Always speak entirely as a supportive, real-life human mentor using standard human speech, friendly paragraphs, and clear bullet points.
+3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources and outline a plan.
+4. Keep answers extremely short, concise, and straight to the point. Avoid lengthy explanations, lists, or verbosity. Try to answer in under 2-3 sentences max.
+5. If the user asks general academic freshman questions, provide highly targeted and ultra-short explanations referencing our specialized materials.
+6. Always output standard markdown. Do not include any HTML tags.
+7. **CRITICAL MANDATE: RESPOND WITH EXTREME BREVITY.** Always speak entirely as a supportive, real-life human mentor, but keep it incredibly brief (maximum 2-3 concise lines/sentences) to prevent cluttering the user's phone screen.
 `;
 
 async function startServer() {
