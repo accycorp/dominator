@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Send, Sparkles, User, Bot, AlertCircle, RefreshCw, BookOpen, ArrowRight, HelpCircle, ChevronRight } from 'lucide-react';
+import { Send, Sparkles, User, Bot, AlertCircle, RefreshCw, BookOpen, ArrowRight, HelpCircle } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -126,25 +126,36 @@ YOUR MISSION & CONSTRAINTS:
 1. Speak in an encouraging, academic, structured, and warm voice. Feel free to use phrases typical of supportive tutors.
 2. Under no circumstance make up references that do not exist in the above list. Only mention the notes, questions, exams, or modules that are explicitly specified above, and always use their exact URLs so the user can easily download or open them in a click. Use markdown link syntax: [Name of Resource](URL).
 3. If a student mentions their selected department (Pre-engineering, Pre-medicine, Pharmacy, Other natural science) or is struggling with a particular course, recommend resources and outline a plan.
-4. Keep answers extremely short, concise, and straight to the point. Avoid lengthy explanations, lists, or verbosity. Try to answer in under 2-3 sentences max.
-5. If the user asks general academic freshman questions, provide highly targeted and ultra-short explanations referencing our specialized materials.
-6. Always output standard markdown. Do not include any HTML tags.
-7. **CRITICAL MANDATE: RESPOND WITH EXTREME BREVITY.** Always speak entirely as a supportive, real-life human mentor, but keep it incredibly brief (maximum 2-3 concise lines/sentences) to prevent cluttering the user's phone screen.
+4. Keep answers clean, readable, in formatted Markdown (with headings, bold text, bullet points), and deep.
+5. If the user asks general academic freshman questions (e.g., how to study for Mathematics or Organic chemistry, how to handle essay writing, explain key topics in iot or emerging technologies), give excellent explanations with reference to our specialized material!
+6. Always output standard markdown. Do not include any HTML tags. Since you are an expert freshman academic tutor in Ethiopia, you are highly specialized in helping them succeed.
+7. **CRITICAL MANDATE: ONLY RESPOND IN NATURAL HUMAN LANGUAGE.** Absolutely do NOT output any robotic elements, programming dictionaries/JSON maps, raw system status codes, database listings, or non-human data tags. The response must sound 100% human-crafted, warm, and natural. Do not outline technical JSON responses, debug metadata, or systemic codes unless the user is specifically debugging a specific code structure in a programming class. Always speak entirely as a supportive, real-life human mentor using standard human speech, friendly paragraphs, and clear bullet points.
 `;
 
-const CLIENT_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
+const CLIENT_API_KEY = "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
 
 export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Greetings! I am your **Dominator AI Tutor**. 🎓\n\nAsk me anything! I can quickly locate freshman notes, textbooks, study strategies, or past exams for you.`
+      content: `Greetings! I am your **Dominator AI Tutor**. 🎓\n\n${
+        selectedDept 
+          ? `Tailored copy for **${selectedDept}** (courses like *${courses.slice(0, 3).join(', ')}*).` 
+          : "Please select a department above for custom suggestions."
+      } Ask me anything to get textbook download links, Amharic notes, exam blueprints, and weekly study plans instantly!`
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [suggestionIndex, setSuggestionIndex] = useState(0);
+  const [currentPromptIdx, setCurrentPromptIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentPromptIdx((prev) => (prev + 1) % QUICK_PROMPTS.length);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, []);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -155,14 +166,6 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
-
-  useEffect(() => {
-    if (messages.length > 1) return;
-    const interval = setInterval(() => {
-      setSuggestionIndex(prev => (prev + 1) % QUICK_PROMPTS.length);
-    }, 4500);
-    return () => clearInterval(interval);
-  }, [messages.length]);
 
   const handleSend = async (textToSend: string) => {
     if (!textToSend.trim() || isLoading) return;
@@ -175,14 +178,20 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
 
     let replyText = "";
     let fetchedSuccessfully = false;
+    let serverErrorDetails = "";
 
     // Phase 1: Try local Express server endpoint
     try {
+      // Ensure the history always starts with a user turn as required by Gemini
+      const allMessages = [...messages, userMessage];
+      const firstUserIndex = allMessages.findIndex(msg => msg.role === 'user');
+      const filteredMessages = firstUserIndex !== -1 ? allMessages.slice(firstUserIndex) : allMessages;
+
       const response = await fetch('/api/ai-tutor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
+          messages: filteredMessages,
           userContext: {
             department: selectedDept,
             courses: courses
@@ -194,17 +203,27 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
         const data = await response.json();
         replyText = data.reply;
         fetchedSuccessfully = true;
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        serverErrorDetails = errData.error || `Server responded with status ${response.status}`;
+        console.warn("Express server returned error response, falling back to direct request...", serverErrorDetails);
       }
-    } catch (err) {
+    } catch (err: any) {
+      serverErrorDetails = err.message || "Network request failed";
       console.warn("Express server endpoint failed or unreachable, falling back to direct client-side gemini request...", err);
     }
 
     // Phase 2: Client-side robust fallback (Direct REST API request)
     if (!fetchedSuccessfully) {
       try {
-        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${CLIENT_API_KEY}`;
+        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CLIENT_API_KEY}`;
         
-        const rawHistory = [...messages, userMessage].map(msg => ({
+        // Ensure the history always starts with a user turn as required by Gemini
+        const allMessages = [...messages, userMessage];
+        const firstUserIndex = allMessages.findIndex(msg => msg.role === 'user');
+        const filteredMessages = firstUserIndex !== -1 ? allMessages.slice(firstUserIndex) : allMessages;
+
+        const rawHistory = filteredMessages.map(msg => ({
           role: msg.role === 'assistant' ? 'model' : 'user',
           parts: [{ text: msg.content }]
         }));
@@ -229,17 +248,24 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
         });
 
         if (!directRes.ok) {
-          throw new Error(`Direct API response error status: ${directRes.status}`);
+          const directErrData = await directRes.json().catch(() => ({}));
+          const directErrMsg = directErrData?.error?.message || `Status ${directRes.status}`;
+          throw new Error(`Direct API response error: ${directErrMsg}`);
         }
 
         const rawData = await directRes.json();
         replyText = rawData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
         if (replyText) {
           fetchedSuccessfully = true;
+        } else {
+          throw new Error("Received empty text response from direct API fallback.");
         }
       } catch (clientErr: any) {
         console.error("Direct browser fallback client error:", clientErr);
-        setErrorMsg(clientErr.message || "Something went wrong. Please check your web connection.");
+        const combinedError = serverErrorDetails 
+          ? `Tutor is currently offline. Server error: "${serverErrorDetails}". Direct fallback error: "${clientErr.message || "Connection blocked"}". Please verify your internet connection or API key Settings in Google AI Studio.`
+          : `Connection error: ${clientErr.message || "Something went wrong. Please try again."}`;
+        setErrorMsg(combinedError);
       }
     }
 
@@ -434,45 +460,53 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
 
       {/* Suggested Promotions */}
       {messages.length === 1 && (
-        <div className="px-6 pb-2 min-h-[70px] flex flex-col justify-center">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5 opacity-60">
-            <Sparkles className="w-3 h-3 text-gold-500" />
-            Suggested Question (rotating):
-          </span>
-          <div className="relative overflow-hidden h-[46px] w-full flex items-center">
-            <AnimatePresence mode="wait">
-              <motion.button
-                key={suggestionIndex}
-                initial={{ opacity: 0.1, y: 4, filter: 'brightness(60%)' }}
-                animate={{ opacity: 1, y: 0, filter: 'brightness(100%)' }}
-                exit={{ opacity: 0.1, y: -4, filter: 'brightness(60%)' }}
-                transition={{ duration: 0.7, ease: "easeInOut" }}
-                type="button"
-                id={`quick-prompt-${suggestionIndex}`}
-                onClick={() => handleSend(QUICK_PROMPTS[suggestionIndex].prompt)}
-                className="absolute inset-x-0 w-full glass-card hover:bg-white/10 border border-gold-500/20 hover:border-gold-500/40 py-1.5 px-3.5 text-left rounded-lg flex items-center justify-between group cursor-pointer transition-all duration-300"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="p-1 rounded bg-gold-500/10 text-gold-400 group-hover:bg-gold-500/20 transition-colors shrink-0">
-                    {(() => {
-                      const Icon = QUICK_PROMPTS[suggestionIndex].icon;
-                      return <Icon className="w-3.5 h-3.5" />;
-                    })()}
-                  </div>
-                  <div className="min-w-0 text-left">
-                    <h5 className="text-[11px] font-bold text-white truncate leading-tight flex items-center gap-1.5">
-                      {QUICK_PROMPTS[suggestionIndex].label}
-                      <span className="w-1 h-1 rounded-full bg-gold-500 animate-ping inline-block" />
-                    </h5>
-                    <p className="text-[9px] text-slate-400 truncate leading-tight max-w-[200px] sm:max-w-md mt-0.5">
-                      {QUICK_PROMPTS[suggestionIndex].prompt}
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-gold-400 transition-colors group-hover:translate-x-0.5 shrink-0" />
-              </motion.button>
-            </AnimatePresence>
+        <div className="px-6 pb-3">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-gold-500/80" />
+              Suggested Guide (Tap to ask):
+            </p>
+            <button
+              onClick={() => setCurrentPromptIdx((prev) => (prev + 1) % QUICK_PROMPTS.length)}
+              type="button"
+              id="next-suggested-btn"
+              className="text-[10px] text-slate-500 hover:text-gold-400 font-medium flex items-center gap-0.5 px-2 py-0.5 rounded bg-white/5 border border-white/5 active:scale-95 transition-all"
+            >
+              Try another
+            </button>
           </div>
+          <AnimatePresence mode="wait">
+            <motion.button
+              key={currentPromptIdx}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 0.85, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              whileHover={{ opacity: 1, scale: 1.01 }}
+              transition={{ duration: 0.3 }}
+              type="button"
+              id={`quick-prompt-${currentPromptIdx}`}
+              onClick={() => handleSend(QUICK_PROMPTS[currentPromptIdx].prompt)}
+              className="w-full bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 p-2 px-3 text-left transition-all rounded-lg flex items-center justify-between gap-3 group text-xs text-slate-300 active:scale-[0.99]"
+            >
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className="p-1 rounded-md bg-white/5 text-gold-400 group-hover:text-gold-300 transition-colors shrink-0">
+                  {(() => {
+                    const IconComp = QUICK_PROMPTS[currentPromptIdx].icon;
+                    return <IconComp className="w-3.5 h-3.5" />;
+                  })()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="font-semibold text-slate-200 block text-[11px] leading-tight group-hover:text-white transition-colors">
+                    {QUICK_PROMPTS[currentPromptIdx].label}
+                  </span>
+                  <span className="text-[10px] text-slate-500 block truncate mt-0.5 group-hover:text-slate-400 transition-colors">
+                    {QUICK_PROMPTS[currentPromptIdx].prompt}
+                  </span>
+                </div>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-gold-400 transition-colors shrink-0 ml-1" />
+            </motion.button>
+          </AnimatePresence>
         </div>
       )}
 
