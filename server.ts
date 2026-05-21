@@ -11,7 +11,8 @@ let aiClient: GoogleGenAI | null = null;
 
 function getAiClient(): GoogleGenAI {
   if (!aiClient) {
-    const apiKey = process.env.GEMINI_API_KEY || "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
+    const rawKey = process.env.GEMINI_API_KEY;
+    const apiKey = (rawKey && rawKey.trim() !== "") ? rawKey : "AIzaSyBfvb1VtAhU_TR-M5jwFOkbMKkJ1YAiRfc";
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY environment variable is not configured. Please add your key in Settings > Secrets.");
     }
@@ -143,9 +144,12 @@ async function startServer() {
       const genAI = getAiClient();
 
       // We form content history to send to Gemini
-      // messages is of form [{ role: 'user' | 'model', content: string }]
+      // Ensure the message history always starts with a user turn as required by Gemini
+      const firstUserIndex = messages.findIndex(msg => msg.role === 'user');
+      const activeMessages = firstUserIndex !== -1 ? messages.slice(firstUserIndex) : messages;
+
       // Map it to GenAI SDK contents format
-      const genAiContents = messages.map(msg => ({
+      const genAiContents = activeMessages.map(msg => ({
         role: msg.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: msg.content }]
       }));

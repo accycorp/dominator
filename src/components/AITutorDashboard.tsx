@@ -181,11 +181,16 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
 
     // Phase 1: Try local Express server endpoint
     try {
+      // Ensure the history always starts with a user turn as required by Gemini
+      const allMessages = [...messages, userMessage];
+      const firstUserIndex = allMessages.findIndex(msg => msg.role === 'user');
+      const filteredMessages = firstUserIndex !== -1 ? allMessages.slice(firstUserIndex) : allMessages;
+
       const response = await fetch('/api/ai-tutor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
+          messages: filteredMessages,
           userContext: {
             department: selectedDept,
             courses: courses
@@ -207,7 +212,12 @@ export function AITutorDashboard({ selectedDept, courses }: AITutorDashboardProp
       try {
         const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CLIENT_API_KEY}`;
         
-        const rawHistory = [...messages, userMessage].map(msg => ({
+        // Ensure the history always starts with a user turn as required by Gemini
+        const allMessages = [...messages, userMessage];
+        const firstUserIndex = allMessages.findIndex(msg => msg.role === 'user');
+        const filteredMessages = firstUserIndex !== -1 ? allMessages.slice(firstUserIndex) : allMessages;
+
+        const rawHistory = filteredMessages.map(msg => ({
           role: msg.role === 'assistant' ? 'model' : 'user',
           parts: [{ text: msg.content }]
         }));
