@@ -91,6 +91,7 @@ Short Notes & Specific Summaries:
 - Pre-medicine Organic Chemistry (Unit 4-5): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/OCDominator_Organic_Chem_Ch4_5_Notes-1.pdf
 - Pre-medicine Organic Chemistry (Unit 6-7): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Dominator_Organic_Chem_Ch6_7_Notes%20(1).pdf
 - Other natural science General Chemistry (Units 4-5): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GCDominator_Full_Explanatory_Chemistry_Notes_Units4_5.pdf
+- Other natural science General Chemistry (Dominator Note 2): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/dominator_chemistry_ch3.pdf
 
 Practice Questions:
 - Anthropology Units 4-5: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ANTH1012_Units4and5_Question_Bank.pdf

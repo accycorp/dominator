@@ -110,6 +110,7 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
     if (course === 'General Chemistry' || course === 'Organic Chemistry') {
       if (dept === 'Other natural science') {
         if (noteName === 'Note 1' || noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GCDominator_Full_Explanatory_Chemistry_Notes_Units4_5.pdf';
+        if (noteName === 'Note 2' || noteName === 'Dominator note (Note 2)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/dominator_chemistry_ch3.pdf';
       }
       if (dept === 'Pre-medicine') {
         if (noteName === 'Note 1' || noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/OCDominator_Organic_Chem_Ch4_5_Notes-1.pdf';
