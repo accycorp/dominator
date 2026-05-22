@@ -151,6 +151,9 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
     if (course === 'Economics') {
       if (noteName === 'Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ECDominator_Units4_5_Exam%20(1).pdf';
     }
+    if (course === 'General Chemistry') {
+      if (noteName === 'Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/GCUniversity_Chemistry_Question_Bank%20(1).PDF';
+    }
   }
 
   // Hardcoded previous exams fallback
@@ -874,7 +877,9 @@ export default function App() {
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  {!(selectedResource === 'Short note' && selectedNote === 'Dominator note') && (
+                  {!(selectedResource === 'Short note' && selectedNote === 'Dominator note') && 
+                   selectedResource !== 'Practice question' && 
+                   selectedResource !== 'Amharic+English note' && (
                     <button 
                       onClick={handleDownload}
                       className="btn-secondary py-2.5 px-6 flex items-center gap-2 text-sm"

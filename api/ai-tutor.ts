@@ -71,6 +71,7 @@ Practice Questions:
 - History Quiz Chapters 5-6: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Dominator_History_Quiz_Ch5_6.pdf
 - Biology Units 4-5 Question set: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Biology_Units4_5_Exam.pdf
 - Economics Units 4-5 Exam: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ECDominator_Units4_5_Exam%20(1).pdf
+- General Chemistry Exam 1 (Other natural science): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/GCUniversity_Chemistry_Question_Bank%20(1).PDF
 
 Previous Exams:
 - Applied Mathematics Final 1: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/exam/MTDominator_AppliedMath1_Final_Exam_Solutions.pdf
