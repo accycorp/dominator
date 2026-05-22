@@ -153,7 +153,8 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
       if (noteName === 'Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/ECDominator_Units4_5_Exam%20(1).pdf';
     }
     if (course === 'General Chemistry') {
-      if (noteName === 'Exam 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/GCUniversity_Chemistry_Question_Bank%20(1).PDF';
+      if (noteName === 'Exam 1' && dept === 'Other natural science') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/GCUniversity_Chemistry_Question_Bank%20(1).PDF';
+      if (noteName === 'Exam 2' && dept === 'Other natural science') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/practice%20questions/Chapter_3_Question_Bank.pdf';
     }
   }
 
