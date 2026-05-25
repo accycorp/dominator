@@ -65,7 +65,8 @@ Amharic + English Bilingual Notes:
 - Economics: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Economics_Bilingual_Handbook_Units_4_5.pdf
 
 Short Notes & Specific Summaries:
-- Applied Mathematics (Units 3-4): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/MTDominator_Units3_4_Notes.pdf
+- Applied Mathematics (Dominator Note 1 - Chapters 3): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Applied_Mathematics_I_Chapter_3_Handbook_Dominator.pdf
+- Applied Mathematics (Dominator Note 2 - Units 3-4): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/MTDominator_Units3_4_Notes.pdf
 - Anthropology (Unit 4 - Marginalized Groups): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/AT_Unit4_Marginalized_Groups_Notes%20(1).pdf
 - Anthropology (Unit 5 - Identity & Multiculturalism): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/AT_Unit5_Ethnicity_Identity_Multiculturalism_Notes.pdf
 - Global Affairs (Unit 2 - Foreign Policy): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/GA_Unit2_Foreign_Policy_Notes.pdf

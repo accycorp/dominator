@@ -75,7 +75,8 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
   if (resource === 'Short note') {
     if (course === 'Applied Mathematics') {
       if (noteName === 'Note 1') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Applied%20Note(3-4)%20@Dominator7_Bot.pdf';
-      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/MTDominator_Units3_4_Notes.pdf';
+      if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Applied_Mathematics_I_Chapter_3_Handbook_Dominator.pdf';
+      if (noteName === 'Dominator note (Note 2)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/MTDominator_Units3_4_Notes.pdf';
     }
     if (course === 'Anthropology') {
       if (noteName === 'Dominator note (Note 1)') return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/AT_Unit4_Marginalized_Groups_Notes%20(1).pdf';
