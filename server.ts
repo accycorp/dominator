@@ -136,6 +136,39 @@ async function startServer() {
   // Middleware for JSON parsing
   app.use(express.json());
 
+  // Secure PDF Proxy Endpoint
+  app.get("/api/pdf-proxy", async (req, res) => {
+    try {
+      const { url } = req.query;
+      if (!url || typeof url !== "string") {
+        return res.status(400).json({ error: "Missing required 'url' parameter." });
+      }
+
+      // Validate the URL is originating from our authorized Supabase bucket
+      if (!url.startsWith("https://xlsqnjbklwmtkihtdjzq.supabase.co/")) {
+        return res.status(403).json({ error: "Access to the requested PDF source is Restricted." });
+      }
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        return res.status(response.status).json({ error: `Failed to fetch target PDF. Status: ${response.status}` });
+      }
+
+      const contentType = response.headers.get("content-type") || "application/pdf";
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Cache-Control", "private, no-store, no-cache, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+      res.setHeader("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none';");
+
+      const arrayBuffer = await response.arrayBuffer();
+      res.send(Buffer.from(arrayBuffer));
+    } catch (error: any) {
+      console.error("PDF Proxy Error:", error);
+      res.status(500).json({ error: "Error forwarding secure PDF." });
+    }
+  });
+
   // API Route for AI tutor chat endpoint
   app.post("/api/ai-tutor", async (req, res) => {
     try {
