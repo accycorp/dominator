@@ -26,6 +26,18 @@
 @layer base {
   body {
     @apply bg-charcoal-950 text-slate-200 font-sans antialiased;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+}
+
+/* Secure Print Protection / Screen Capture deterrent */
+@media print {
+  body, html, #root {
+    display: none !important;
+    visibility: hidden !important;
   }
 }
 
