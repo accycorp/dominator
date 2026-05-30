@@ -72,6 +72,15 @@ async function fetchSupabaseResource(dept: string, course: string, resource: str
     if (course === 'Economics' || course === 'economics') {
       return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Economics_Bilingual_Handbook_Units_4_5.pdf';
     }
+    if (course === 'Applied Mathematics' || course === 'Applied mathematics' || course === 'applied mathematics') {
+      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Applied_Math_Comprehensive_Bilingual_Handbook.pdf';
+    }
+    if (course === 'Communicative English II' || course === 'english' || course === 'English') {
+      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_English_Grammar_Guide%20(2).pdf';
+    }
+    if (course === 'Computer Programming' || course === 'computer programming') {
+      return 'https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/DOMINATOR_C_Plus_Plus_Study_Notes.pdf';
+    }
   }
 
   // Hardcoded short notes fallback

@@ -71,6 +71,9 @@ Amharic + English Bilingual Notes:
 - Emerging Technology: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/dominator_master_handbook.pdf
 - Global Affairs: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Global_Affairs_Dominator_Bilingual_Notes.pdf
 - Economics: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_Economics_Bilingual_Handbook_Units_4_5.pdf
+- Applied Mathematics: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Applied_Math_Comprehensive_Bilingual_Handbook.pdf
+- Communicative English II: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/Dominator_English_Grammar_Guide%20(2).pdf
+- Computer Programming: https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/Amharic%20+%20English/DOMINATOR_C_Plus_Plus_Study_Notes.pdf
 
 Short Notes & Specific Summaries:
 - Applied Mathematics (Dominator Note 1 - Chapters 3): https://xlsqnjbklwmtkihtdjzq.supabase.co/storage/v1/object/public/dominator/short%20notes/Applied_Mathematics_I_Chapter_3_Handbook_Dominator.pdf
