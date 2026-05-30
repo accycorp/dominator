@@ -369,75 +369,95 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
 
   // --- Screen Capture Protection State ---
-  const [securityToast, setSecurityToast] = useState<string | null>(null);
+  const [isScreenHidden, setIsScreenHidden] = useState(false);
 
   useEffect(() => {
-    // 2. Suppress default print/screenshot key combinations
+    const hideScreen = () => setIsScreenHidden(true);
+    const showScreen = () => setIsScreenHidden(false);
+
+    // Suppress default print/screenshot key combinations and hide screen instantly
     const handleKeyDown = (e: KeyboardEvent) => {
       // Print Screen key
       if (e.key === 'PrintScreen' || e.keyCode === 44) {
         e.preventDefault();
-        setSecurityToast("PrintScreen blocked. standard screenshotting is prohibited.");
+        hideScreen();
+        setTimeout(showScreen, 2000);
       }
 
       // Print page (Cmd+P or Ctrl+P)
       if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
         e.preventDefault();
-        setSecurityToast("Printing blocked. PDF creation and physical copies are prohibited.");
+        hideScreen();
+        setTimeout(showScreen, 2000);
       }
 
       // Save page (Cmd+S or Ctrl+S)
       if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
-        setSecurityToast("Saving source code blocked. Files are secured on-server.");
+        hideScreen();
+        setTimeout(showScreen, 2000);
       }
 
       // Mac Screenshot commands detection (Cmd+Shift+3, Cmd+Shift+4, Cmd+Shift+5, etc)
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5' || e.key === '8' || e.key === 's' || e.key === 'S')) {
         e.preventDefault();
-        setSecurityToast("Screen capture key combination blocked.");
+        hideScreen();
+        setTimeout(showScreen, 2000);
       }
 
       // Dev tools detection (F12 or Ctrl+Shift+I)
       if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I'))) {
-        setSecurityToast("Developer tools shortcut detected. Access restricted under protection policy.");
+        e.preventDefault();
+        hideScreen();
+        setTimeout(showScreen, 2000);
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === 'PrintScreen' || e.keyCode === 44) {
-        // Clear clipboard attempts if copy-capture utility used
-        navigator.clipboard?.writeText?.("🔒 Core Study Material Protected").catch(() => {});
-        setSecurityToast("Screenshot attempt intercepted. Clipboard cleared.");
+        navigator.clipboard?.writeText?.("🔒 Study Material Protected").catch(() => {});
+        hideScreen();
+        setTimeout(showScreen, 2000);
       }
     };
 
-    // 3. Block right-click to avoid element inspecting / manual downloading of nested links
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
-      setSecurityToast("Right-click menu disabled under Screen Protection policy.");
     };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden || document.visibilityState === 'hidden') {
+        hideScreen();
+      } else {
+        showScreen();
+      }
+    };
+
+    // Monitor window focus/blur/visibility states
+    window.addEventListener('blur', hideScreen);
+    window.addEventListener('focus', showScreen);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Detect mouse leaving document (prevent screenshot / sniping utility hover)
+    document.addEventListener('mouseleave', hideScreen);
+    document.addEventListener('mouseenter', showScreen);
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     document.addEventListener('contextmenu', handleContextMenu);
 
     return () => {
+      window.removeEventListener('blur', hideScreen);
+      window.removeEventListener('focus', showScreen);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('mouseleave', hideScreen);
+      document.removeEventListener('mouseenter', showScreen);
+
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       document.removeEventListener('contextmenu', handleContextMenu);
     };
   }, []);
-
-  // Auto-clear notification toast after 4 seconds
-  useEffect(() => {
-    if (securityToast) {
-      const timer = setTimeout(() => {
-        setSecurityToast(null);
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [securityToast]);
 
   // --- Supabase Connection Test ---
   useEffect(() => {
@@ -664,30 +684,7 @@ export default function App() {
   // --- Views ---
 
   return (
-    <div className="min-h-screen bg-charcoal-950 flex flex-col overflow-x-hidden relative">
-      {/* Security Toast Notifications */}
-      <AnimatePresence>
-        {securityToast && (
-          <motion.div
-            initial={{ opacity: 0, y: -50, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="fixed top-20 left-1/2 -translate-x-1/2 z-[1000] max-w-sm w-full px-4 text-left"
-          >
-            <div className="bg-slate-900/90 backdrop-blur-md border border-red-500/30 text-white rounded-xl shadow-2xl p-4 flex items-start gap-3">
-              <div className="p-1 px-1.5 bg-red-500/15 text-red-500 rounded-lg shrink-0">
-                <ShieldAlert size={18} className="animate-bounce" />
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <h4 className="text-sm font-semibold text-red-400">Security Guard</h4>
-                <p className="text-xs text-slate-300 mt-0.5">{securityToast}</p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+    <div className={`min-h-screen bg-charcoal-950 flex flex-col overflow-x-hidden relative ${isScreenHidden ? 'screen-secure-hidden' : ''}`}>
       <main className="flex-1 pb-12 flex items-center justify-center">
         <AnimatePresence mode="wait">
           {currentView === View.LANDING && (

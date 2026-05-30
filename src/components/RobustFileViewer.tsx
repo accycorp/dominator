@@ -62,15 +62,6 @@ export const RobustFileViewer: React.FC<RobustFileViewerProps> = ({ supabaseUrl,
           >
             🔄 Reload Frame
           </button>
-          {!hideFullscreen && (
-            <button 
-              type="button"
-              onClick={handleFallbackOpen}
-              className="px-2 py-1 bg-gold-600 text-white rounded font-semibold hover:bg-gold-700 transition"
-            >
-              ↗️ Open Fullscreen
-            </button>
-          )}
         </div>
       </div>
 

@@ -41,6 +41,14 @@
   }
 }
 
+/* Screen Capture protection overlay */
+.screen-secure-hidden {
+  filter: blur(100px) brightness(0) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: none !important;
+}
+
 @layer utilities {
   .animate-spin-slow {
     animation: spin 8s linear infinite;
